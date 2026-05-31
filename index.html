@@ -14,20 +14,18 @@
         
         // ========== CONFIGURACIÓN DE FIREBASE (REEMPLAZAR CON TUS DATOS) ==========
         const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            projectId: "TU_PROYECTO",
-            storageBucket: "TU_PROYECTO.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
-        };
-        
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        const provider = new GoogleAuthProvider();
+            apiKey: "AIzaSyCcUGTXDuC5Oi3xVdAjn1IeszXzcewvJD8",
+  authDomain: "stopinolero-3a9fe.firebaseapp.com",
+  projectId: "stopinolero-3a9fe",
+  storageBucket: "stopinolero-3a9fe.firebasestorage.app",
+  messagingSenderId: "981024606261",
+  appId: "1:981024606261:web:649c3d300caa214ddd497c",
+  measurementId: "G-0JCYC7KEYZ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
         
         // Exportar para uso global en módulos (se accede mediante window)
         window.db = db;
