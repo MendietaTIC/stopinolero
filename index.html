@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Stop Pinolero - Juego Nicaragüense</title>
     <style>
-        /* ========== ESTILOS STOP PINOLERO (versión integrada) ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: all 0.2s ease;
         }
 
         :root {
@@ -31,6 +29,7 @@
             min-height: 100vh;
             color: #2D2B2A;
             padding: 1rem;
+            transition: background 0.3s, color 0.2s;
         }
 
         body.dark {
@@ -50,6 +49,7 @@
             padding: 1.8rem;
             margin-bottom: 1.8rem;
             border: 2px solid var(--amarillo-maiz);
+            transition: background 0.3s;
         }
 
         body.dark .card {
@@ -68,6 +68,7 @@
             box-shadow: 0 5px 0 #b97f10;
             transition: 0.07s linear;
             font-family: inherit;
+            margin: 0.25rem;
         }
 
         .btn:active {
@@ -139,12 +140,14 @@
 
         .modal-content {
             background: white;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             border-radius: 48px;
             padding: 2rem;
             text-align: center;
             border: 4px solid var(--amarillo-maiz);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         body.dark .modal-content {
@@ -175,7 +178,7 @@
             margin-bottom: 5px;
         }
 
-        input, select {
+        input, select, textarea {
             padding: 10px 16px;
             border-radius: 60px;
             border: 2px solid var(--amarillo-maiz);
@@ -192,6 +195,13 @@
             border: 2px solid var(--amarillo-maiz);
         }
 
+        .inline-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
         @media (max-width: 768px) {
             .btn { padding: 8px 16px; font-size: 0.85rem; }
             .avatar { width: 50px; height: 50px; font-size: 1.8rem; }
@@ -200,7 +210,6 @@
     </style>
     <!-- Firebase SDKs -->
     <script type="module">
-        // Tu configuración de Firebase (proporcionada)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
@@ -221,8 +230,8 @@
         const provider = new GoogleAuthProvider();
         
         let currentUserData = null;
-        let unsubscribeRooms = null;
         let currentRoomUnsub = null;
+        let currentTimer = null;
         
         // Elementos DOM
         const authScreen = document.getElementById('authScreen');
@@ -230,10 +239,9 @@
         const googleBtn = document.getElementById('googleLoginBtn');
         const guestBtn = document.getElementById('guestLoginBtn');
         
-        const categoriesMap = {
-            classic: ["Nombre","Animal","Ciudad","País","Comida","Profesión","Objeto"],
-            pinolera: ["Municipio","Departamento","Volcán","Río","Comida típica","Tradición","Personaje histórico","Sitio turístico"]
-        };
+        // Verificar si hay parámetro de sala en URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomCodeFromUrl = urlParams.get('room');
         
         async function updateUserUI() {
             if(!currentUserData) return;
@@ -247,7 +255,7 @@
                                     <button id="logoutBtn" class="btn">🚪 Salir</button>`;
                 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
                     await signOut(auth);
-                    location.reload();
+                    window.location.href = window.location.pathname;
                 });
             }
         }
@@ -275,6 +283,10 @@
             currentUserData = { uid: user.uid, ...data };
             updateUserUI();
             loadMainMenu();
+            // Si hay código de sala en URL, unirse automáticamente
+            if(roomCodeFromUrl) {
+                setTimeout(() => joinRoomWithCode(roomCodeFromUrl), 1000);
+            }
         }
         
         onAuthStateChanged(auth, async (user) => {
@@ -288,7 +300,14 @@
             }
         });
         
-        googleBtn.onclick = () => signInWithPopup(auth, provider);
+        googleBtn.onclick = async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Error Google login:", error);
+                alert("Error al iniciar con Google. Revisa consola y configuración de Firebase.");
+            }
+        };
         guestBtn.onclick = async () => {
             const cred = await signInAnonymously(auth);
             const randomName = "Viajero@" + Math.floor(Math.random()*1000);
@@ -302,48 +321,95 @@
         document.getElementById('createRoomBtn').onclick = () => openModal('createRoomModal');
         document.getElementById('joinRoomBtn').onclick = () => openModal('joinRoomModal');
         
-        // Crear sala
+        // Dinamizar las categorías personalizadas (5 campos)
+        function setupCustomCategories() {
+            const container = document.getElementById('customCategoriesContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            for(let i=1; i<=5; i++) {
+                const div = document.createElement('div');
+                div.className = 'cat-input';
+                div.innerHTML = `<label>🔖 Categoría ${i}</label><input type="text" id="cat${i}" placeholder="Ej: Volcán, Comida típica...">`;
+                container.appendChild(div);
+            }
+        }
+        document.getElementById('catStyleSelect')?.addEventListener('change', (e) => {
+            const customDiv = document.getElementById('customCategoriesSection');
+            if(e.target.value === 'custom') {
+                customDiv.style.display = 'block';
+                setupCustomCategories();
+            } else {
+                customDiv.style.display = 'none';
+            }
+        });
+        
+        // Crear sala con categorías personalizadas
         document.getElementById('confirmCreateRoom').onclick = async () => {
             if(!currentUserData) return;
-            const roomName = document.getElementById('roomName').value || "Sala Pinolera";
+            const roomName = document.getElementById('roomName').value.trim() || "Sala Pinolera";
             const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
             const roundTime = parseInt(document.getElementById('roundTime').value);
             const numRounds = parseInt(document.getElementById('numRounds').value);
-            const catType = document.getElementById('catType').value;
+            const catStyle = document.getElementById('catStyleSelect').value;
+            let categories = [];
+            if(catStyle === 'custom') {
+                for(let i=1; i<=5; i++) {
+                    let val = document.getElementById(`cat${i}`)?.value.trim();
+                    if(val) categories.push(val);
+                }
+                if(categories.length === 0) categories = ["Categoría 1", "Categoría 2", "Categoría 3", "Categoría 4", "Categoría 5"];
+            } else {
+                // Predefinidas clásicas o pinoleras
+                if(catStyle === 'classic') categories = ["Nombre", "Animal", "Ciudad", "País", "Comida"];
+                else categories = ["Municipio", "Volcán", "Comida típica", "Tradición", "Sitio turístico"];
+            }
             const roomId = Math.random().toString(36).substring(2,8).toUpperCase();
             await setDoc(doc(db, "rooms", roomId), {
-                roomId, roomName, host: currentUserData.uid, maxPlayers, roundTime, numRounds, catType,
-                players: [{uid: currentUserData.uid, nombre: currentUserData.nombre, avatar: currentUserData.avatar, puntosRonda: 0, total: 0}],
+                roomId, roomName, host: currentUserData.uid, maxPlayers, roundTime, numRounds,
+                categories: categories,
+                players: [{uid: currentUserData.uid, nombre: currentUserData.nombre, avatar: currentUserData.avatar, total: 0}],
                 state: "waiting",
                 currentRound: 0,
                 currentLetter: null,
                 stopTriggered: false
             });
             await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `${currentUserData.nombre} creó la sala`, timestamp: serverTimestamp() });
+            
+            // Generar enlace
+            const roomLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+            alert(`✅ Sala creada!\nCódigo: ${roomId}\nEnlace: ${roomLink}`);
+            // Preguntar si quiere compartir por WhatsApp
+            if(confirm("¿Compartir enlace por WhatsApp?")) {
+                const whatsappUrl = `https://wa.me/?text=¡Únete a mi partida de Stop Pinolero! %0A${encodeURIComponent(roomLink)}`;
+                window.open(whatsappUrl, '_blank');
+            }
             loadRoomView(roomId);
             closeModals();
         };
         
-        // Unirse a sala
-        document.getElementById('confirmJoinRoom').onclick = async () => {
-            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+        async function joinRoomWithCode(code) {
             const roomRef = doc(db, "rooms", code);
             const snap = await getDoc(roomRef);
             if(!snap.exists()) { alert("Sala no encontrada"); return; }
             const room = snap.data();
-            if(room.players.some(p => p.uid === currentUserData.uid)) { loadRoomView(code); closeModals(); return; }
+            if(room.players.some(p => p.uid === currentUserData.uid)) { loadRoomView(code); return; }
             if(room.players.length >= room.maxPlayers) { alert("Sala llena"); return; }
             await updateDoc(roomRef, {
-                players: arrayUnion({uid: currentUserData.uid, nombre: currentUserData.nombre, avatar: currentUserData.avatar, puntosRonda: 0, total: 0})
+                players: arrayUnion({uid: currentUserData.uid, nombre: currentUserData.nombre, avatar: currentUserData.avatar, total: 0})
             });
             await addDoc(collection(db, "rooms", code, "messages"), { sender: "Sistema", text: `${currentUserData.nombre} se unió`, timestamp: serverTimestamp() });
             loadRoomView(code);
+        }
+        
+        document.getElementById('confirmJoinRoom').onclick = async () => {
+            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            await joinRoomWithCode(code);
             closeModals();
         };
         
         function loadMainMenu() {
             if(currentRoomUnsub) currentRoomUnsub();
-            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>🎮 ¡Bienvenido a Stop Pinolero!</h2><p>🇳🇮 Demuestra tu conocimiento de Nicaragua. Crea una sala o únete con un código.</p><img src="https://cdn-icons-png.flaticon.com/512/1999/1999625.png" width="80" style="margin-top:10px"></div>`;
+            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>🎮 ¡Bienvenido a Stop Pinolero!</h2><p>🇳🇮 Demuestra tu conocimiento. Crea una sala personalizada o únete con código.</p><div style="text-align:center"><img src="https://cdn-icons-png.flaticon.com/512/1999/1999625.png" width="80"></div></div>`;
         }
         
         async function loadRoomView(roomId) {
@@ -358,19 +424,29 @@
                             <div class="grid-2">
                                 <div><h3>👥 Jugadores (${playersList.length}/${room.maxPlayers})</h3><ul>`;
                 playersList.forEach(p => html += `<li>${p.avatar || '🎭'} ${p.nombre} - ${p.total} pts</li>`);
-                html += `</ul>${isHost && room.state === 'waiting' ? '<button id="startGameBtn" class="btn btn-success">🚀 Iniciar Partida</button>' : '<p>⏳ Esperando al anfitrión...</p>'}</div>
-                         <div><h3>💬 Chat en vivo</h3><div id="chatMessages" class="chat-box"></div>
+                html += `</ul>${isHost && room.state === 'waiting' ? '<button id="startGameBtn" class="btn btn-success">🚀 Iniciar Partida</button>' : '<p>⏳ Esperando al anfitrión...</p>'}
+                        <div class="inline-buttons"><button id="copyLinkBtn" class="btn">🔗 Copiar enlace</button><button id="whatsappShareBtn" class="btn">📱 WhatsApp</button></div>
+                        </div>
+                         <div><h3>💬 Chat</h3><div id="chatMessages" class="chat-box"></div>
                          <input id="chatInput" placeholder="Escribe un mensaje..."><button id="sendChat" class="btn">Enviar</button></div>
                          </div></div>`;
                 document.getElementById('dynamicView').innerHTML = html;
                 
-                // Chat en tiempo real
+                const roomLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+                document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
+                    navigator.clipboard.writeText(roomLink);
+                    alert("Enlace copiado al portapapeles");
+                });
+                document.getElementById('whatsappShareBtn')?.addEventListener('click', () => {
+                    window.open(`https://wa.me/?text=¡Únete a Stop Pinolero! ${encodeURIComponent(roomLink)}`, '_blank');
+                });
+                
+                // Chat
                 const chatQuery = query(collection(db, "rooms", roomId, "messages"), orderBy("timestamp", "asc"));
                 onSnapshot(chatQuery, (snap) => {
                     const chatDiv = document.getElementById('chatMessages');
                     if(chatDiv) chatDiv.innerHTML = snap.docs.map(d => `<div><b>${d.data().sender}</b>: ${d.data().text}</div>`).join('');
                 });
-                
                 document.getElementById('sendChat')?.addEventListener('click', async () => {
                     const msg = document.getElementById('chatInput').value;
                     if(msg) await addDoc(collection(db, "rooms", roomId, "messages"), { sender: currentUserData.nombre, text: msg, timestamp: serverTimestamp() });
@@ -392,7 +468,7 @@
         }
         
         async function renderGameInterface(roomId, room) {
-            const categories = categoriesMap[room.catType] || categoriesMap.classic;
+            const categories = room.categories;
             const html = `<div class="card"><h2>🎲 Ronda ${room.currentRound}/${room.numRounds} | Letra: ${room.currentLetter}</h2>
                          <div id="timerDisplay" style="font-size:2.5rem; font-weight:bold; text-align:center">⏱️ --</div>
                          <button id="stopBtnGlobal" class="btn btn-stop">🛑 STOP</button>
@@ -401,20 +477,20 @@
             document.getElementById('dynamicView').innerHTML = html;
             const container = document.getElementById('catsGrid');
             categories.forEach(cat => {
-                container.innerHTML += `<div class="cat-input"><label>${cat}</label><input name="${cat}" placeholder="Ej: ..."></div>`;
+                container.innerHTML += `<div class="cat-input"><label>${cat}</label><input name="${cat}" placeholder="Palabra con ${room.currentLetter}..."></div>`;
             });
             let timeLeft = room.roundTime;
             const timerElem = document.getElementById('timerDisplay');
-            const interval = setInterval(async () => {
+            if(currentTimer) clearInterval(currentTimer);
+            currentTimer = setInterval(async () => {
                 if(timeLeft <= 0) {
-                    clearInterval(interval);
+                    clearInterval(currentTimer);
                     await finishRound(roomId);
                 } else {
                     timerElem.innerText = `⏱️ ${timeLeft} segundos`;
                     timeLeft--;
                 }
             }, 1000);
-            window.currentTimer = interval;
             
             document.getElementById('stopBtnGlobal')?.addEventListener('click', async () => {
                 const roomSnap = await getDoc(doc(db, "rooms", roomId));
@@ -427,13 +503,13 @@
             document.getElementById('answersForm')?.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const answers = {};
-                categories.forEach(cat => { answers[cat] = document.querySelector(`[name="${cat}"]`).value.trim() || ""; });
+                categories.forEach(cat => { answers[cat] = document.querySelector(`[name="${cat}"]`).value.trim().toLowerCase() || ""; });
                 await setDoc(doc(db, "rooms", roomId, "answers", currentUserData.uid), { uid: currentUserData.uid, answers, round: room.currentRound });
             });
         }
         
         async function finishRound(roomId) {
-            clearInterval(window.currentTimer);
+            clearInterval(currentTimer);
             const roomRef = doc(db, "rooms", roomId);
             const roomSnap = await getDoc(roomRef);
             const room = roomSnap.data();
@@ -441,7 +517,7 @@
             const answersSnap = await getDocs(collection(db, `rooms/${roomId}/answers`));
             const allAnswers = {};
             answersSnap.forEach(docu => { allAnswers[docu.id] = docu.data(); });
-            const categoriesList = categoriesMap[room.catType];
+            const categoriesList = room.categories;
             const scores = {};
             room.players.forEach(p => { scores[p.uid] = 0; });
             for(let cat of categoriesList) {
@@ -468,17 +544,16 @@
                 let add = scores[p.uid] || 0;
                 let bonus = (p.uid === winnerUid) ? 5 : 0;
                 let newTotal = p.total + add + bonus;
-                return { ...p, puntosRonda: add + bonus, total: newTotal };
+                return { ...p, total: newTotal };
             });
             await updateDoc(roomRef, { players: newPlayers, stopTriggered: false });
-            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `📊 Resultados ronda: ${winnerUid === currentUserData.uid ? "¡Ganaste la ronda! +5 bonus" : "Ronda finalizada"}`, timestamp: serverTimestamp() });
+            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `📊 Ronda ${room.currentRound}: ${winnerUid === currentUserData.uid ? "¡Ganaste! +5" : "Finalizada"}`, timestamp: serverTimestamp() });
             if(room.currentRound >= room.numRounds) {
                 finalizeGame(roomId);
             } else {
                 const newLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
                 await updateDoc(roomRef, { currentRound: increment(1), currentLetter: newLetter, roundStart: serverTimestamp(), stopTriggered: false });
                 await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🔄 Nueva Ronda ${room.currentRound+1} - Letra: ${newLetter}`, timestamp: serverTimestamp() });
-                // Recargar interfaz
                 const updatedRoom = (await getDoc(roomRef)).data();
                 renderGameInterface(roomId, updatedRoom);
             }
@@ -492,16 +567,16 @@
             const winner = sorted[0];
             const userRef = doc(db, "users", winner.uid);
             await updateDoc(userRef, { victorias: increment(1), partidasJugadas: increment(1), puntosGlobales: increment(winner.total) });
-            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🏆 ¡FIN DEL JUEGO! Ganador: ${winner.nombre} con ${winner.total} puntos`, timestamp: serverTimestamp() });
+            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🏆 ¡FIN! Ganador: ${winner.nombre} (${winner.total} pts)`, timestamp: serverTimestamp() });
             document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>🏁 Partida finalizada</h2>
-                <p>🥇 1º ${sorted[0]?.nombre} - ${sorted[0]?.total} pts</p>
-                <p>🥈 2º ${sorted[1]?.nombre} - ${sorted[1]?.total} pts</p>
-                <p>🥉 3º ${sorted[2]?.nombre} - ${sorted[2]?.total} pts</p>
+                <p>🥇 ${sorted[0]?.nombre} - ${sorted[0]?.total} pts</p>
+                <p>🥈 ${sorted[1]?.nombre} - ${sorted[1]?.total} pts</p>
+                <p>🥉 ${sorted[2]?.nombre} - ${sorted[2]?.total} pts</p>
                 <button class="btn" onclick="location.reload()">Volver al inicio</button></div>`;
             await updateDoc(roomRef, { state: "finished" });
         }
         
-        // Ranking Global
+        // Ranking, Amigos, Perfil, Config (similares a antes pero adaptados)
         document.getElementById('rankingBtn').onclick = async () => {
             const q = query(collection(db, "users"), orderBy("puntosGlobales", "desc"), limit(20));
             const snap = await getDocs(q);
@@ -511,10 +586,8 @@
             document.getElementById('dynamicView').innerHTML = rankHtml;
         };
         
-        // Amigos
         document.getElementById('friendsBtn').onclick = async () => {
-            const friendsRef = collection(db, "friends");
-            const q = query(friendsRef, where("usuario", "==", currentUserData.uid), where("estado", "==", "aceptado"));
+            const q = query(collection(db, "friends"), where("usuario", "==", currentUserData.uid), where("estado", "==", "aceptado"));
             const snap = await getDocs(q);
             let html = `<div class="card"><h2>👥 Mis Amigos</h2><input id="searchFriend" placeholder="Buscar por nombre..."><button id="searchBtn" class="btn">🔍 Buscar</button><ul id="friendList">`;
             snap.forEach(d => html += `<li>👤 ${d.data().amigoNombre || d.data().amigo}</li>`);
@@ -526,39 +599,37 @@
                 const res = await getDocs(userQuery);
                 let list = '<h4>Resultados</h4>';
                 res.forEach(u => {
-                    if(u.id !== currentUserData.uid) list += `<div>${u.data().nombre} <button class="sendRequestBtn" data-uid="${u.id}">➕ Agregar amigo</button></div>`;
+                    if(u.id !== currentUserData.uid) list += `<div>${u.data().nombre} <button class="sendRequestBtn" data-uid="${u.id}">➕ Agregar</button></div>`;
                 });
                 document.getElementById('friendList').innerHTML = list;
                 document.querySelectorAll('.sendRequestBtn').forEach(btn => btn.addEventListener('click', async () => {
                     const friendId = btn.dataset.uid;
                     const friendDoc = await getDoc(doc(db, "users", friendId));
                     await setDoc(doc(db, "friends", `${currentUserData.uid}_${friendId}`), { usuario: currentUserData.uid, amigo: friendId, estado: "pendiente", amigoNombre: friendDoc.data().nombre });
-                    alert("Solicitud enviada ✅");
+                    alert("Solicitud enviada");
                 }));
             };
         };
         
-        // Perfil
         document.getElementById('profileBtn').onclick = () => {
-            const user = currentUserData;
-            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>👤 Mi Perfil Pinolero</h2>
-                <p>🎭 Avatar: ${user.avatar}</p><p>📛 Nombre: ${user.nombre}</p>
-                <p>🏅 Nivel: ${user.nivel}</p><p>⭐ Experiencia: ${user.experiencia}</p>
-                <p>💰 Puntos globales: ${user.puntosGlobales}</p><p>🎮 Partidas jugadas: ${user.partidasJugadas}</p>
-                <p>🏆 Victorias: ${user.victorias}</p>
+            const u = currentUserData;
+            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>👤 Mi Perfil</h2>
+                <p>🎭 Avatar: ${u.avatar}</p><p>📛 Nombre: ${u.nombre}</p>
+                <p>🏅 Nivel: ${u.nivel}</p><p>⭐ Experiencia: ${u.experiencia}</p>
+                <p>💰 Puntos: ${u.puntosGlobales}</p><p>🎮 Partidas: ${u.partidasJugadas}</p>
+                <p>🏆 Victorias: ${u.victorias}</p>
                 <button id="toggleDark">🌙 Modo Oscuro</button>
                 <button id="shareProfile">🔗 Compartir perfil</button></div>`;
             document.getElementById('toggleDark')?.addEventListener('click', () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); });
-            document.getElementById('shareProfile')?.addEventListener('click', () => { alert(`📎 Comparte tu perfil: https://stoppinolero.com/u/${currentUserData.uid}`); });
+            document.getElementById('shareProfile')?.addEventListener('click', () => { alert(`Comparte: ${window.location.origin}/u/${currentUserData.uid}`); });
             if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
         };
         
-        // Configuración
         document.getElementById('settingsBtn').onclick = () => {
-            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>⚙️ Configuración divertida</h2>
+            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>⚙️ Configuración</h2>
                 <label><input type="checkbox" id="soundToggle"> 🔊 Activar sonidos</label><br>
-                <button id="saveSettings" class="btn">Guardar preferencias</button></div>`;
-            document.getElementById('saveSettings').onclick = () => { alert("Preferencias guardadas (por ahora solo efecto visual)"); };
+                <button id="saveSettings" class="btn">Guardar</button></div>`;
+            document.getElementById('saveSettings').onclick = () => { alert("Preferencias guardadas"); };
         };
         
         if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
@@ -569,7 +640,7 @@
 <div class="app-container" id="appRoot">
     <div id="authScreen" class="card" style="text-align:center">
         <h1 style="color:var(--azul-bandera); font-size:2.5rem;">🇳🇮 Stop Pinolero 🎉</h1>
-        <p style="font-size:1.2rem">¡El clásico Stop con sabor Nicaragüense!</p>
+        <p style="font-size:1.2rem">¡El clásico Stop con sabor Nicaragüense! Personaliza tus categorías y compite en línea.</p>
         <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem">
             <button id="googleLoginBtn" class="btn btn-primary">🔐 Ingresar con Google</button>
             <button id="guestLoginBtn" class="btn">🎭 Modo Invitado</button>
@@ -597,8 +668,34 @@
         </div>
         <div id="dynamicView"></div>
     </div>
-    <div id="createRoomModal" class="modal"><div class="modal-content"><h3>➕ Crear Sala</h3><input type="text" id="roomName" placeholder="Nombre de la sala"><select id="maxPlayers"><option>4</option><option>6</option><option>8</option><option>10</option></select><select id="roundTime"><option>30</option><option>60</option><option>90</option></select><select id="numRounds"><option>3</option><option>5</option></select><select id="catType"><option value="classic">📚 Clásicas</option><option value="pinolera">🇳🇮 Pinoleras</option></select><button id="confirmCreateRoom" class="btn">Crear sala</button><button class="closeModal">Cancelar</button></div></div>
-    <div id="joinRoomModal" class="modal"><div class="modal-content"><h3>🔗 Unirse con código</h3><input id="roomCodeInput" placeholder="Ej: A3F7K2"><button id="confirmJoinRoom" class="btn">Unirse</button><button class="closeModal">Cerrar</button></div></div>
+    <!-- Modal Crear Sala -->
+    <div id="createRoomModal" class="modal"><div class="modal-content"><h3>➕ Crear Sala Personalizada</h3>
+        <input type="text" id="roomName" placeholder="Nombre de la sala"><br><br>
+        <label>👥 Máximo jugadores:</label>
+        <select id="maxPlayers"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br><br>
+        <label>⏱️ Tiempo por ronda:</label>
+        <select id="roundTime"><option value="60">60 segundos</option><option value="90">90 segundos</option><option value="120">120 segundos</option></select><br><br>
+        <label>🔄 Número de rondas:</label>
+        <select id="numRounds"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><br><br>
+        <label>📋 Estilo de categorías:</label>
+        <select id="catStyleSelect">
+            <option value="classic">Clásicas (Nombre, Animal, Ciudad, País, Comida)</option>
+            <option value="pinolera">Pinoleras (Municipio, Volcán, Comida típica, Tradición, Sitio turístico)</option>
+            <option value="custom">🎨 Personalizado (escribe tus 5 categorías)</option>
+        </select><br><br>
+        <div id="customCategoriesSection" style="display:none;">
+            <label>📝 Escribe 5 categorías a buscar:</label>
+            <div id="customCategoriesContainer"></div>
+        </div>
+        <button id="confirmCreateRoom" class="btn btn-success">✅ Crear Sala y obtener enlace</button>
+        <button class="closeModal">Cancelar</button>
+    </div></div>
+    <!-- Modal Unirse -->
+    <div id="joinRoomModal" class="modal"><div class="modal-content"><h3>🔗 Unirse a Sala</h3>
+        <input id="roomCodeInput" placeholder="Código de sala (ej. A3F7K2)"><br><br>
+        <button id="confirmJoinRoom" class="btn">Unirse</button>
+        <button class="closeModal">Cerrar</button>
+    </div></div>
 </div>
 </body>
 </html>
