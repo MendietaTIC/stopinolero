@@ -5,199 +5,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Stop Pinolero - Juego Nicaragüense</title>
     <style>
-        /* ========== ESTILOS STOP PINOLERO (versión integrada) ========== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
-        }
+       /* ========== ESTILOS STOP PINOLERO ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
 
-        :root {
-            --azul-bandera: #1E3C72;
-            --verde-naturaleza: #2E7D32;
-            --amarillo-maiz: #F4C430;
-            --naranja-atardecer: #F29B45;
-            --blanco: #FFFFFF;
-            --crema: #FFF8E7;
-            --rojo-pinolero: #C62828;
-            --sombra: 0 8px 20px rgba(0,0,0,0.15);
-            --border-radius: 32px;
-        }
+:root {
+    --azul-bandera: #1E3C72;
+    --verde-naturaleza: #2E7D32;
+    --amarillo-maiz: #F4C430;
+    --naranja-atardecer: #F29B45;
+    --blanco: #FFFFFF;
+    --crema: #FFF8E7;
+    --rojo-pinolero: #C62828;
+    --sombra: 0 8px 20px rgba(0,0,0,0.15);
+    --border-radius: 32px;
+}
 
-        body {
-            font-family: 'Comic Neue', 'Segoe UI', 'Poppins', cursive, sans-serif;
-            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B5 100%);
-            min-height: 100vh;
-            color: #2D2B2A;
-            padding: 1rem;
-        }
+body {
+    font-family: 'Comic Neue', 'Segoe UI', 'Poppins', cursive, sans-serif;
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B5 100%);
+    min-height: 100vh;
+    color: #2D2B2A;
+    padding: 1rem;
+}
 
-        body.dark {
-            background: linear-gradient(135deg, #1a2a2f 0%, #0f1a1f 100%);
-            color: #F5F5F5;
-        }
+body.dark {
+    background: linear-gradient(135deg, #1a2a2f 0%, #0f1a1f 100%);
+    color: #F5F5F5;
+}
 
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+/* Contenedor principal */
+.app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-        .card {
-            background: var(--blanco);
-            border-radius: var(--border-radius);
-            box-shadow: var(--sombra);
-            padding: 1.8rem;
-            margin-bottom: 1.8rem;
-            border: 2px solid var(--amarillo-maiz);
-        }
+/* Tarjetas redondeadas tipo cuento */
+.card {
+    background: var(--blanco);
+    border-radius: var(--border-radius);
+    box-shadow: var(--sombra);
+    padding: 1.8rem;
+    margin-bottom: 1.8rem;
+    border: 2px solid var(--amarillo-maiz);
+    backdrop-filter: blur(2px);
+}
 
-        body.dark .card {
-            background: #2c3e34;
-            border-color: var(--naranja-atardecer);
-        }
+body.dark .card {
+    background: #2c3e34;
+    border-color: var(--naranja-atardecer);
+}
 
-        .btn {
-            background: var(--amarillo-maiz);
-            border: none;
-            padding: 12px 28px;
-            border-radius: 60px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            box-shadow: 0 5px 0 #b97f10;
-            transition: 0.07s linear;
-            font-family: inherit;
-        }
+/* Botones grandes, redondeados y divertidos */
+.btn {
+    background: var(--amarillo-maiz);
+    border: none;
+    padding: 12px 28px;
+    border-radius: 60px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #b97f10;
+    transition: 0.07s linear;
+    font-family: inherit;
+}
 
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #b97f10;
-        }
+.btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #b97f10;
+}
 
-        .btn-primary {
-            background: var(--azul-bandera);
-            color: white;
-            box-shadow: 0 5px 0 #0f2a4a;
-        }
+.btn-primary {
+    background: var(--azul-bandera);
+    color: white;
+    box-shadow: 0 5px 0 #0f2a4a;
+}
 
-        .btn-success {
-            background: var(--verde-naturaleza);
-            color: white;
-            box-shadow: 0 5px 0 #1b5e20;
-        }
+.btn-success {
+    background: var(--verde-naturaleza);
+    color: white;
+    box-shadow: 0 5px 0 #1b5e20;
+}
 
-        .btn-stop {
-            background: var(--rojo-pinolero);
-            color: white;
-            font-size: 1.8rem;
-            padding: 16px 28px;
-            animation: pulse 1s infinite;
-            box-shadow: 0 5px 0 #8b0000;
-        }
+.btn-stop {
+    background: var(--rojo-pinolero);
+    color: white;
+    font-size: 1.8rem;
+    padding: 16px 28px;
+    animation: pulse 1s infinite;
+    box-shadow: 0 5px 0 #8b0000;
+}
 
-        @keyframes pulse {
-            0% { transform: scale(1); background: #c62828; }
-            50% { transform: scale(1.05); background: #e53935; }
-            100% { transform: scale(1); background: #c62828; }
-        }
+@keyframes pulse {
+    0% { transform: scale(1); background: #c62828; }
+    50% { transform: scale(1.05); background: #e53935; }
+    100% { transform: scale(1); background: #c62828; }
+}
 
-        .user-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            background: rgba(255, 245, 220, 0.95);
-            border-radius: 80px;
-            padding: 0.8rem 1.8rem;
-            margin-bottom: 1.5rem;
-            border: 2px solid var(--amarillo-maiz);
-        }
+/* Header de usuario */
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: rgba(255, 245, 220, 0.95);
+    border-radius: 80px;
+    padding: 0.8rem 1.8rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid var(--amarillo-maiz);
+}
 
-        .avatar {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, var(--naranja-atardecer), #F57C00);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+.avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--naranja-atardecer), #F57C00);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
+/* Modales bonitos */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
 
-        .modal-content {
-            background: white;
-            max-width: 500px;
-            width: 90%;
-            border-radius: 48px;
-            padding: 2rem;
-            text-align: center;
-            border: 4px solid var(--amarillo-maiz);
-        }
+.modal-content {
+    background: white;
+    max-width: 500px;
+    width: 90%;
+    border-radius: 48px;
+    padding: 2rem;
+    text-align: center;
+    border: 4px solid var(--amarillo-maiz);
+}
 
-        body.dark .modal-content {
-            background: #2c3e34;
-        }
+/* Grid responsivo */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
+/* Categorías */
+.category-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
 
-        .category-grid {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-        }
+.cat-input {
+    background: #FFF2DF;
+    border-radius: 28px;
+    padding: 8px 12px;
+}
 
-        .cat-input {
-            background: #FFF2DF;
-            border-radius: 28px;
-            padding: 8px 12px;
-        }
+.cat-input label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
 
-        .cat-input label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-        }
+input, select {
+    padding: 10px 16px;
+    border-radius: 60px;
+    border: 2px solid var(--amarillo-maiz);
+    font-family: inherit;
+    width: 100%;
+}
 
-        input, select {
-            padding: 10px 16px;
-            border-radius: 60px;
-            border: 2px solid var(--amarillo-maiz);
-            font-family: inherit;
-            width: 100%;
-        }
+/* Chat */
+.chat-box {
+    background: #F7F2E7;
+    border-radius: 28px;
+    height: 280px;
+    overflow-y: auto;
+    padding: 1rem;
+    border: 2px solid var(--amarillo-maiz);
+}
 
-        .chat-box {
-            background: #F7F2E7;
-            border-radius: 28px;
-            height: 280px;
-            overflow-y: auto;
-            padding: 1rem;
-            border: 2px solid var(--amarillo-maiz);
-        }
-
-        @media (max-width: 768px) {
-            .btn { padding: 8px 16px; font-size: 0.85rem; }
-            .avatar { width: 50px; height: 50px; font-size: 1.8rem; }
-            .card { padding: 1rem; }
-        }
-    </style>
+/* Responsive móvil */
+@media (max-width: 768px) {
+    .btn { padding: 8px 16px; font-size: 0.85rem; }
+    .avatar { width: 50px; height: 50px; font-size: 1.8rem; }
+    .card { padding: 1rem; }
+}
     <!-- Firebase SDKs -->
     <script type="module">
         // Tu configuración de Firebase (proporcionada)
