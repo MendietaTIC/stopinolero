@@ -1,17 +1,3 @@
-He implementado todas las mejoras solicitadas:
-
-1. **Sonidos** – Se agregaron mediante enlaces externos (sin Firebase Storage). Cada acción importante (inicio de ronda, STOP, fin de juego, etc.) tiene su sonido correspondiente. Los sonidos se cargan desde un CDN público.
-2. **Fuente** – Cambiada a `'Nunito', sans-serif` para toda la aplicación.
-3. **Guardado automático** – Eliminado el botón "Guardar respuestas". Ahora cada vez que el usuario escribe en un campo de respuesta, se guarda automáticamente en Firestore (sin necesidad de clic).
-4. **Validación en vivo** – Cada campo de respuesta muestra un ícono ✅ o ❌ según si la palabra ingresada comienza con la letra de la ronda (ignorando mayúsculas/minúsculas y tildes simplificadas).
-5. **STOP mejorado** – Al presionar STOP, aparece un overlay semi-transparente sobre toda la pantalla con un mensaje y cuenta regresiva de 10 segundos (con sonido de tic-tac). Al finalizar, se cierra automáticamente.
-6. **Botones de votación claros** – En la pantalla de validación, ahora cada respuesta tiene dos botones: ✅ Correcta y ❌ Incorrecta. Los votos se registran y se calcula la mayoría para anular respuestas.
-7. **Corrección de estadísticas** – Al finalizar la partida, se actualizan las estadísticas (puntos, victorias, partidas jugadas) de TODOS los jugadores, no solo del ganador.
-8. **UI móvil mejorada** – Botones más grandes, inputs con mayor área táctil, tamaños ajustados para pantallas pequeñas.
-
-El juego está completamente funcional y listo para usar.
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
