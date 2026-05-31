@@ -34,7 +34,22 @@
 
         body.dark {
             background: linear-gradient(135deg, #1a2a2f 0%, #0f1a1f 100%);
-            color: #F5F5F5;
+            color: #E0E0E0;
+        }
+
+        body.dark .card {
+            background: #2c3e34;
+            border-color: var(--naranja-atardecer);
+            color: #F0F0F0;
+        }
+
+        body.dark .cat-input {
+            background: #3a4a3f;
+        }
+
+        body.dark .chat-box {
+            background: #2a3a2f;
+            color: #E0E0E0;
         }
 
         .app-container {
@@ -50,11 +65,6 @@
             margin-bottom: 1.8rem;
             border: 2px solid var(--amarillo-maiz);
             transition: background 0.3s;
-        }
-
-        body.dark .card {
-            background: #2c3e34;
-            border-color: var(--naranja-atardecer);
         }
 
         .btn {
@@ -114,6 +124,9 @@
             margin-bottom: 1.5rem;
             border: 2px solid var(--amarillo-maiz);
         }
+        body.dark .user-header {
+            background: #2c3e34;
+        }
 
         .avatar {
             width: 65px;
@@ -152,6 +165,7 @@
 
         body.dark .modal-content {
             background: #2c3e34;
+            color: #E0E0E0;
         }
 
         .grid-2 {
@@ -202,6 +216,37 @@
             margin-top: 10px;
         }
 
+        .answers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .answers-table th, .answers-table td {
+            border: 1px solid var(--amarillo-maiz);
+            padding: 8px;
+            text-align: left;
+        }
+        .vote-btn {
+            background: #e0e0e0;
+            border: none;
+            border-radius: 30px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .vote-btn.invalid {
+            background: #f44336;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--amarillo-maiz);
+        }
+
         @media (max-width: 768px) {
             .btn { padding: 8px 16px; font-size: 0.85rem; }
             .avatar { width: 50px; height: 50px; font-size: 1.8rem; }
@@ -233,13 +278,11 @@
         let currentRoomUnsub = null;
         let currentTimer = null;
         
-        // Elementos DOM
         const authScreen = document.getElementById('authScreen');
         const mainPanel = document.getElementById('mainPanel');
         const googleBtn = document.getElementById('googleLoginBtn');
         const guestBtn = document.getElementById('guestLoginBtn');
         
-        // Verificar si hay parámetro de sala en URL
         const urlParams = new URLSearchParams(window.location.search);
         const roomCodeFromUrl = urlParams.get('room');
         
@@ -283,10 +326,7 @@
             currentUserData = { uid: user.uid, ...data };
             updateUserUI();
             loadMainMenu();
-            // Si hay código de sala en URL, unirse automáticamente
-            if(roomCodeFromUrl) {
-                setTimeout(() => joinRoomWithCode(roomCodeFromUrl), 1000);
-            }
+            if(roomCodeFromUrl) setTimeout(() => joinRoomWithCode(roomCodeFromUrl), 1000);
         }
         
         onAuthStateChanged(auth, async (user) => {
@@ -302,10 +342,11 @@
         
         googleBtn.onclick = async () => {
             try {
-                await signInWithPopup(auth, provider);
+                const result = await signInWithPopup(auth, provider);
+                console.log("Google login exitoso", result.user);
             } catch (error) {
-                console.error("Error Google login:", error);
-                alert("Error al iniciar con Google. Revisa consola y configuración de Firebase.");
+                console.error("Error Google:", error);
+                alert("Error al iniciar con Google. Asegúrate de que el proveedor esté habilitado en Firebase Console (Authentication -> Sign-in methods -> Google).");
             }
         };
         guestBtn.onclick = async () => {
@@ -321,7 +362,6 @@
         document.getElementById('createRoomBtn').onclick = () => openModal('createRoomModal');
         document.getElementById('joinRoomBtn').onclick = () => openModal('joinRoomModal');
         
-        // Dinamizar las categorías personalizadas (5 campos)
         function setupCustomCategories() {
             const container = document.getElementById('customCategoriesContainer');
             if(!container) return;
@@ -343,7 +383,6 @@
             }
         });
         
-        // Crear sala con categorías personalizadas
         document.getElementById('confirmCreateRoom').onclick = async () => {
             if(!currentUserData) return;
             const roomName = document.getElementById('roomName').value.trim() || "Sala Pinolera";
@@ -358,10 +397,10 @@
                     if(val) categories.push(val);
                 }
                 if(categories.length === 0) categories = ["Categoría 1", "Categoría 2", "Categoría 3", "Categoría 4", "Categoría 5"];
+            } else if(catStyle === 'classic') {
+                categories = ["Nombre", "Animal", "Lugar", "Cosa", "Comida"];
             } else {
-                // Predefinidas clásicas o pinoleras
-                if(catStyle === 'classic') categories = ["Nombre", "Animal", "Ciudad", "País", "Comida"];
-                else categories = ["Municipio", "Volcán", "Comida típica", "Tradición", "Sitio turístico"];
+                categories = ["Municipio", "Volcán", "Comida típica", "Tradición", "Sitio turístico"];
             }
             const roomId = Math.random().toString(36).substring(2,8).toUpperCase();
             await setDoc(doc(db, "rooms", roomId), {
@@ -374,14 +413,10 @@
                 stopTriggered: false
             });
             await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `${currentUserData.nombre} creó la sala`, timestamp: serverTimestamp() });
-            
-            // Generar enlace
             const roomLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
             alert(`✅ Sala creada!\nCódigo: ${roomId}\nEnlace: ${roomLink}`);
-            // Preguntar si quiere compartir por WhatsApp
             if(confirm("¿Compartir enlace por WhatsApp?")) {
-                const whatsappUrl = `https://wa.me/?text=¡Únete a mi partida de Stop Pinolero! %0A${encodeURIComponent(roomLink)}`;
-                window.open(whatsappUrl, '_blank');
+                window.open(`https://wa.me/?text=¡Únete a Stop Pinolero! ${encodeURIComponent(roomLink)}`, '_blank');
             }
             loadRoomView(roomId);
             closeModals();
@@ -431,17 +466,10 @@
                          <input id="chatInput" placeholder="Escribe un mensaje..."><button id="sendChat" class="btn">Enviar</button></div>
                          </div></div>`;
                 document.getElementById('dynamicView').innerHTML = html;
-                
                 const roomLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-                document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
-                    navigator.clipboard.writeText(roomLink);
-                    alert("Enlace copiado al portapapeles");
-                });
-                document.getElementById('whatsappShareBtn')?.addEventListener('click', () => {
-                    window.open(`https://wa.me/?text=¡Únete a Stop Pinolero! ${encodeURIComponent(roomLink)}`, '_blank');
-                });
+                document.getElementById('copyLinkBtn')?.addEventListener('click', () => { navigator.clipboard.writeText(roomLink); alert("Enlace copiado"); });
+                document.getElementById('whatsappShareBtn')?.addEventListener('click', () => { window.open(`https://wa.me/?text=¡Únete a Stop Pinolero! ${encodeURIComponent(roomLink)}`, '_blank'); });
                 
-                // Chat
                 const chatQuery = query(collection(db, "rooms", roomId, "messages"), orderBy("timestamp", "asc"));
                 onSnapshot(chatQuery, (snap) => {
                     const chatDiv = document.getElementById('chatMessages');
@@ -461,9 +489,7 @@
                         renderGameInterface(roomId, { ...room, currentRound: 1, currentLetter: letter });
                     });
                 }
-                if(room.state === "playing") {
-                    await renderGameInterface(roomId, room);
-                }
+                if(room.state === "playing") await renderGameInterface(roomId, room);
             });
         }
         
@@ -514,49 +540,109 @@
             const roomSnap = await getDoc(roomRef);
             const room = roomSnap.data();
             if(!room) return;
+            
+            // Obtener respuestas
             const answersSnap = await getDocs(collection(db, `rooms/${roomId}/answers`));
             const allAnswers = {};
             answersSnap.forEach(docu => { allAnswers[docu.id] = docu.data(); });
+            
+            // Mostrar interfaz de votación
             const categoriesList = room.categories;
-            const scores = {};
-            room.players.forEach(p => { scores[p.uid] = 0; });
+            const playersList = room.players;
+            
+            let votingHtml = `<div class="card"><h3>📋 Validar respuestas - Ronda ${room.currentRound}</h3><p>Cada jugador puede marcar como incorrecta una respuesta (pulgar abajo). Mayoría de votos la anula.</p>`;
             for(let cat of categoriesList) {
-                const wordMap = new Map();
-                for(let [uid, data] of Object.entries(allAnswers)) {
-                    if(data.round === room.currentRound) {
-                        let word = data.answers[cat]?.toLowerCase().trim();
-                        if(word && word !== "") {
-                            if(!wordMap.has(word)) wordMap.set(word, []);
-                            wordMap.get(word).push(uid);
-                        }
+                votingHtml += `<h4>📌 ${cat}</h4><table class="answers-table"><tr><th>Jugador</th><th>Respuesta</th><th>Votar incorrecta</th></tr>`;
+                for(let player of playersList) {
+                    const answerObj = allAnswers[player.uid];
+                    const word = answerObj && answerObj.round === room.currentRound ? (answerObj.answers[cat] || "") : "";
+                    const votesRef = collection(db, "rooms", roomId, "votes");
+                    const qVotes = query(votesRef, where("round", "==", room.currentRound), where("category", "==", cat), where("playerUid", "==", player.uid));
+                    const voteSnap = await getDocs(qVotes);
+                    const isInvalid = voteSnap.size > (playersList.length / 2);
+                    votingHtml += `<tr>
+                        <td>${player.nombre}</td>
+                        <td>${word || "(vacío)"}</td>
+                        <td><button class="vote-btn ${isInvalid ? 'invalid' : ''}" data-cat="${cat}" data-player="${player.uid}">👍❌</button></td>
+                    </tr>`;
+                }
+                votingHtml += `</table><br>`;
+            }
+            votingHtml += `<button id="finalizeVotingBtn" class="btn btn-primary">✅ Finalizar ronda y calcular puntos</button></div>`;
+            document.getElementById('dynamicView').innerHTML = votingHtml;
+            
+            // Lógica de votos
+            const voteButtons = document.querySelectorAll('.vote-btn');
+            voteButtons.forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const category = btn.dataset.cat;
+                    const playerUid = btn.dataset.player;
+                    const votesRef = doc(db, "rooms", roomId, "votes", `${room.currentRound}_${category}_${playerUid}_${currentUserData.uid}`);
+                    await setDoc(votesRef, { round: room.currentRound, category, playerUid, voter: currentUserData.uid, timestamp: serverTimestamp() });
+                    btn.classList.toggle('invalid');
+                });
+            });
+            
+            document.getElementById('finalizeVotingBtn')?.addEventListener('click', async () => {
+                // Recolectar votos y calcular puntajes finales
+                const votesRef = collection(db, "rooms", roomId, "votes");
+                const allVotesSnap = await getDocs(votesRef);
+                const invalidMap = new Map(); // key: `${category}_${playerUid}`
+                for(let vote of allVotesSnap.docs) {
+                    const v = vote.data();
+                    if(v.round === room.currentRound) {
+                        const key = `${v.category}_${v.playerUid}`;
+                        if(!invalidMap.has(key)) invalidMap.set(key, []);
+                        invalidMap.get(key).push(v.voter);
                     }
                 }
-                for(let [word, uids] of wordMap.entries()) {
-                    let points = (uids.length === 1) ? 2 : 1;
-                    uids.forEach(uid => scores[uid] += points);
+                const invalidSet = new Set();
+                for(let [key, voters] of invalidMap.entries()) {
+                    if(voters.length > (playersList.length / 2)) invalidSet.add(key);
                 }
-            }
-            let maxScore = 0, winnerUid = null;
-            for(let [uid, pts] of Object.entries(scores)) {
-                if(pts > maxScore) { maxScore = pts; winnerUid = uid; }
-            }
-            const newPlayers = room.players.map(p => {
-                let add = scores[p.uid] || 0;
-                let bonus = (p.uid === winnerUid) ? 5 : 0;
-                let newTotal = p.total + add + bonus;
-                return { ...p, total: newTotal };
+                
+                // Calcular puntuación con anulaciones
+                const scores = {};
+                playersList.forEach(p => scores[p.uid] = 0);
+                for(let cat of categoriesList) {
+                    const wordMap = new Map(); // word -> array de uids no anulados
+                    for(let player of playersList) {
+                        const key = `${cat}_${player.uid}`;
+                        if(invalidSet.has(key)) continue; // anulada
+                        const answerObj = allAnswers[player.uid];
+                        const word = answerObj && answerObj.round === room.currentRound ? (answerObj.answers[cat] || "").trim() : "";
+                        if(word && word !== "") {
+                            if(!wordMap.has(word)) wordMap.set(word, []);
+                            wordMap.get(word).push(player.uid);
+                        }
+                    }
+                    for(let [word, uids] of wordMap.entries()) {
+                        let points = (uids.length === 1) ? 2 : 1;
+                        uids.forEach(uid => scores[uid] += points);
+                    }
+                }
+                let maxScore = 0, winnerUid = null;
+                for(let [uid, pts] of Object.entries(scores)) {
+                    if(pts > maxScore) { maxScore = pts; winnerUid = uid; }
+                }
+                const newPlayers = room.players.map(p => {
+                    let add = scores[p.uid] || 0;
+                    let bonus = (p.uid === winnerUid) ? 5 : 0;
+                    let newTotal = p.total + add + bonus;
+                    return { ...p, total: newTotal };
+                });
+                await updateDoc(roomRef, { players: newPlayers, stopTriggered: false });
+                await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `📊 Ronda ${room.currentRound}: ${winnerUid === currentUserData.uid ? "¡Ganaste! +5" : "Finalizada"}`, timestamp: serverTimestamp() });
+                if(room.currentRound >= room.numRounds) {
+                    finalizeGame(roomId);
+                } else {
+                    const newLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    await updateDoc(roomRef, { currentRound: increment(1), currentLetter: newLetter, roundStart: serverTimestamp(), stopTriggered: false });
+                    await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🔄 Nueva Ronda ${room.currentRound+1} - Letra: ${newLetter}`, timestamp: serverTimestamp() });
+                    const updatedRoom = (await getDoc(roomRef)).data();
+                    renderGameInterface(roomId, updatedRoom);
+                }
             });
-            await updateDoc(roomRef, { players: newPlayers, stopTriggered: false });
-            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `📊 Ronda ${room.currentRound}: ${winnerUid === currentUserData.uid ? "¡Ganaste! +5" : "Finalizada"}`, timestamp: serverTimestamp() });
-            if(room.currentRound >= room.numRounds) {
-                finalizeGame(roomId);
-            } else {
-                const newLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-                await updateDoc(roomRef, { currentRound: increment(1), currentLetter: newLetter, roundStart: serverTimestamp(), stopTriggered: false });
-                await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🔄 Nueva Ronda ${room.currentRound+1} - Letra: ${newLetter}`, timestamp: serverTimestamp() });
-                const updatedRoom = (await getDoc(roomRef)).data();
-                renderGameInterface(roomId, updatedRoom);
-            }
         }
         
         async function finalizeGame(roomId) {
@@ -576,7 +662,7 @@
             await updateDoc(roomRef, { state: "finished" });
         }
         
-        // Ranking, Amigos, Perfil, Config (similares a antes pero adaptados)
+        // Ranking, Amigos, Perfil, Config
         document.getElementById('rankingBtn').onclick = async () => {
             const q = query(collection(db, "users"), orderBy("puntosGlobales", "desc"), limit(20));
             const snap = await getDocs(q);
@@ -679,7 +765,7 @@
         <select id="numRounds"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><br><br>
         <label>📋 Estilo de categorías:</label>
         <select id="catStyleSelect">
-            <option value="classic">Clásicas (Nombre, Animal, Ciudad, País, Comida)</option>
+            <option value="classic">Clásicas (Nombre, Animal, Lugar, Cosa, Comida)</option>
             <option value="pinolera">Pinoleras (Municipio, Volcán, Comida típica, Tradición, Sitio turístico)</option>
             <option value="custom">🎨 Personalizado (escribe tus 5 categorías)</option>
         </select><br><br>
@@ -696,6 +782,10 @@
         <button id="confirmJoinRoom" class="btn">Unirse</button>
         <button class="closeModal">Cerrar</button>
     </div></div>
+    <footer>
+        <p>Código pinolero</p>
+        <p>Creado por Juan Mendieta</p>
+    </footer>
 </div>
 </body>
 </html>
