@@ -6,11 +6,10 @@
     <title>Stop Pinolero - Juego Clásico Nicaragüense</title>
     <!-- Firebase SDKs (Modular) -->
     <script type="module">
-        // Import Firebase modules (Config will be replaced by user)
+        // Import Firebase modules (Config será reemplazada por el usuario)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
         
         // ========== CONFIGURACIÓN DE FIREBASE (REEMPLAZAR CON TUS DATOS) ==========
         const firebaseConfig = {
@@ -26,11 +25,13 @@
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
         
-        // Exportar para uso global en módulos (se accede mediante window)
+        // Exportar para uso global
         window.db = db;
         window.auth = auth;
-        window.storage = storage;
         window.provider = provider;
         window.signInWithPopup = signInWithPopup;
         window.signInAnonymously = signInAnonymously;
@@ -71,14 +72,12 @@ const analytics = getAnalytics(app);
             color: #e0e0e0;
         }
 
-        /* Contenedor principal */
         .app-container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 1rem;
         }
 
-        /* Tarjetas */
         .card {
             background: var(--blanco);
             border-radius: 32px;
@@ -92,7 +91,6 @@ const analytics = getAnalytics(app);
             color: #f0f0f0;
         }
 
-        /* Botones grandes redondeados */
         .btn {
             background: var(--amarillo-maiz);
             border: none;
@@ -129,14 +127,12 @@ const analytics = getAnalytics(app);
             100% { transform: scale(1); background: #e53935; }
         }
 
-        /* Grid flexible */
         .grid-2 {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
         }
 
-        /* Header usuario */
         .user-header {
             display: flex;
             align-items: center;
@@ -159,7 +155,6 @@ const analytics = getAnalytics(app);
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* Modales */
         .modal {
             display: none;
             position: fixed;
@@ -181,7 +176,6 @@ const analytics = getAnalytics(app);
         }
         body.dark .modal-content { background: #2c3e34; }
 
-        /* Categorías en juego */
         .category-grid {
             display: grid;
             gap: 0.8rem;
@@ -199,7 +193,6 @@ const analytics = getAnalytics(app);
             border: 1px solid #ccc;
         }
 
-        /* Chat */
         .chat-box {
             background: #f0ede8;
             border-radius: 24px;
@@ -208,7 +201,6 @@ const analytics = getAnalytics(app);
             padding: 1rem;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .btn { padding: 8px 16px; font-size: 0.9rem; }
             .avatar { width: 45px; height: 45px; font-size: 1.5rem; }
@@ -217,7 +209,6 @@ const analytics = getAnalytics(app);
 </head>
 <body>
 <div class="app-container" id="appRoot">
-    <!-- Pantalla de autenticación inicial -->
     <div id="authScreen" class="card" style="text-align:center">
         <h1 style="color:var(--azul-bandera)">🇳🇮 Stop Pinolero 🎉</h1>
         <p>¡El clásico Stop con sabor nicaragüense!</p>
@@ -227,7 +218,6 @@ const analytics = getAnalytics(app);
         </div>
     </div>
 
-    <!-- Panel Principal (después de login) -->
     <div id="mainPanel" style="display:none">
         <div class="user-header" id="userHeader"></div>
         <div class="grid-2">
@@ -251,25 +241,26 @@ const analytics = getAnalytics(app);
         <div id="dynamicView"></div>
     </div>
 
-    <!-- Modales comunes -->
     <div id="createRoomModal" class="modal"><div class="modal-content"><h3>Crear Sala</h3><input type="text" id="roomName" placeholder="Nombre de sala"><select id="maxPlayers"><option>4</option><option>6</option><option>8</option></select><select id="roundTime"><option>30</option><option>60</option><option>90</option></select><select id="numRounds"><option>3</option><option>5</option></select><select id="catType"><option value="classic">Clásicas</option><option value="pinolera">Pinoleras</option></select><button id="confirmCreateRoom" class="btn">Crear</button><button class="closeModal">Cancelar</button></div></div>
     <div id="joinRoomModal" class="modal"><div class="modal-content"><h3>Unirse con código</h3><input id="roomCodeInput" placeholder="Código de sala"><button id="confirmJoinRoom">Unirse</button><button class="closeModal">Cerrar</button></div></div>
 </div>
-<script type="module" src="./app.js"></script>
 <script type="module">
-    // app.js contenido principal - Módulo completo
+    // app.js contenido principal - SIN STORAGE
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, deleteUser } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
     import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
-    import { getStorage, ref } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
 
-    const app = initializeApp(window.firebaseConfig);
+    const firebaseConfig = {
+        apiKey: "TU_API_KEY",
+        authDomain: "TU_PROYECTO.firebaseapp.com",
+        projectId: "TU_PROYECTO",
+    };
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     let currentUserData = null;
     let unsubscribeRooms = null;
     
-    // UI Elements
     const authScreen = document.getElementById('authScreen');
     const mainPanel = document.getElementById('mainPanel');
     const googleBtn = document.getElementById('googleLoginBtn');
@@ -332,14 +323,12 @@ const analytics = getAnalytics(app);
         await saveUserToFirestore(cred.user, true, randomName);
     };
     
-    // Modales
     function openModal(id){ document.getElementById(id).style.display='flex'; }
     function closeModals(){ document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); }
     document.querySelectorAll('.closeModal').forEach(btn=>btn.addEventListener('click',closeModals));
     document.getElementById('createRoomBtn').onclick = ()=> openModal('createRoomModal');
     document.getElementById('joinRoomBtn').onclick = ()=> openModal('joinRoomModal');
     
-    // Crear sala
     document.getElementById('confirmCreateRoom').onclick = async()=>{
         if(!currentUserData) return;
         const roomName = document.getElementById('roomName').value || "Sala Pinolera";
@@ -362,7 +351,6 @@ const analytics = getAnalytics(app);
         closeModals();
     };
     
-    // Unirse a sala
     document.getElementById('confirmJoinRoom').onclick = async()=>{
         const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
         const roomRef = doc(db,"rooms",code);
@@ -395,7 +383,6 @@ const analytics = getAnalytics(app);
             playersList.forEach(p=>html+=`<li>${p.avatar || '🎭'} ${p.nombre} - ${p.total} pts</li>`);
             html+=`</ul>${isHost && room.state==='waiting' ? '<button id="startGameBtn" class="btn btn-success">🚀 Iniciar Partida</button>' : '<p>⏳ Esperando al anfitrión...</p>'}</div><div><h3>💬 Chat</h3><div id="chatMessages" class="chat-box" style="height:200px"></div><input id="chatInput" placeholder="Mensaje..."><button id="sendChat">Enviar</button></div></div></div>`;
             document.getElementById('dynamicView').innerHTML = html;
-            // chat listener
             const chatQuery = query(collection(db,"rooms",roomId,"messages"), orderBy("timestamp","asc"));
             onSnapshot(chatQuery, (snap)=>{
                 const chatDiv = document.getElementById('chatMessages');
@@ -503,7 +490,6 @@ const analytics = getAnalytics(app);
         const room = snap.data();
         const sorted = [...room.players].sort((a,b)=>b.total-a.total);
         let winner = sorted[0];
-        // actualizar estadísticas usuario
         const userRef = doc(db,"users",winner.uid);
         await updateDoc(userRef,{ victorias: increment(1), partidasJugadas: increment(1), puntosGlobales: increment(winner.total) });
         await addDoc(collection(db,"rooms",roomId,"messages"),{sender:"Sistema",text:`🏆 FIN DEL JUEGO - Ganador: ${winner.nombre} con ${winner.total} puntos`,timestamp:serverTimestamp()});
@@ -511,11 +497,8 @@ const analytics = getAnalytics(app);
         await updateDoc(roomRef,{ state: "finished" });
     }
     
-    async function startRound(roomId,round,letter,timeSec){
-        // ya implementado
-    }
+    async function startRound(roomId,round,letter,timeSec){}
     
-    // Ranking global
     document.getElementById('rankingBtn').onclick = async()=>{
         const q = query(collection(db,"users"), orderBy("puntosGlobales","desc"), limit(20));
         const snap = await getDocs(q);
@@ -525,7 +508,6 @@ const analytics = getAnalytics(app);
         document.getElementById('dynamicView').innerHTML = rankHtml;
     };
     
-    // Amigos
     document.getElementById('friendsBtn').onclick = async()=>{
         const friendsRef = collection(db,"friends");
         const q = query(friendsRef, where("usuario","==",currentUserData.uid), where("estado","==","aceptado"));
@@ -536,7 +518,7 @@ const analytics = getAnalytics(app);
         document.getElementById('dynamicView').innerHTML = html;
         document.getElementById('searchBtn').onclick = async()=>{
             const search = document.getElementById('searchFriend').value;
-            const userQuery = query(collection(db,"users"), where("nombre",">=",search), where("<=",search+"\uf8ff"), limit(5));
+            const userQuery = query(collection(db,"users"), where("nombre",">=",search), where("nombre","<=",search+"\uf8ff"), limit(5));
             const res = await getDocs(userQuery);
             let list = '<h4>Resultados</h4>';
             res.forEach(u=>{
@@ -551,7 +533,6 @@ const analytics = getAnalytics(app);
         };
     };
     
-    // Perfil y configuración
     document.getElementById('profileBtn').onclick = ()=>{
         const user = currentUserData;
         document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>👤 Mi Perfil</h2><p>Avatar: ${user.avatar}</p><p>Nombre: ${user.nombre}</p><p>Nivel: ${user.nivel}</p><p>Exp: ${user.experiencia}</p><p>Puntos: ${user.puntosGlobales}</p><p>Partidas Jugadas: ${user.partidasJugadas}</p><p>Victorias: ${user.victorias}</p><button id="toggleDark">🌙 Modo Oscuro</button> <button id="shareProfile">🔗 Compartir Perfil</button></div>`;
