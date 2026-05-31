@@ -3,51 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Stop Pinolero - Juego Clásico Nicaragüense</title>
-    <!-- Firebase SDKs (Modular) -->
-    <script type="module">
-        // Import Firebase modules (Config será reemplazada por el usuario)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
-        
-        // ========== CONFIGURACIÓN DE FIREBASE (REEMPLAZAR CON TUS DATOS) ==========
-        const firebaseConfig = {
-            apiKey: "AIzaSyCcUGTXDuC5Oi3xVdAjn1IeszXzcewvJD8",
-  authDomain: "stopinolero-3a9fe.firebaseapp.com",
-  projectId: "stopinolero-3a9fe",
-  storageBucket: "stopinolero-3a9fe.firebasestorage.app",
-  messagingSenderId: "981024606261",
-  appId: "1:981024606261:web:649c3d300caa214ddd497c",
-  measurementId: "G-0JCYC7KEYZ"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        
-        // Exportar para uso global
-        window.db = db;
-        window.auth = auth;
-        window.provider = provider;
-        window.signInWithPopup = signInWithPopup;
-        window.signInAnonymously = signInAnonymously;
-        window.signOut = signOut;
-        window.onAuthStateChanged = onAuthStateChanged;
-        window.getFirestoreUtils = { collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, runTransaction };
-        
-        // Iniciar app
-        import("./app.js");
-    </script>
+    <title>Stop Pinolero - Juego Nicaragüense</title>
     <style>
+        /* ========== ESTILOS STOP PINOLERO (versión integrada) ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: background 0.3s, color 0.2s;
+            transition: all 0.2s ease;
         }
 
         :root {
@@ -56,81 +19,87 @@ const analytics = getAnalytics(app);
             --amarillo-maiz: #F4C430;
             --naranja-atardecer: #F29B45;
             --blanco: #FFFFFF;
-            --gris-claro: #f5f5f5;
-            --sombra: 0 8px 20px rgba(0,0,0,0.1);
+            --crema: #FFF8E7;
+            --rojo-pinolero: #C62828;
+            --sombra: 0 8px 20px rgba(0,0,0,0.15);
+            --border-radius: 32px;
         }
 
         body {
-            font-family: 'Segoe UI', 'Poppins', 'Comic Neue', sans-serif;
-            background: linear-gradient(145deg, #f9f5e8 0%, #ffe6cc 100%);
+            font-family: 'Comic Neue', 'Segoe UI', 'Poppins', cursive, sans-serif;
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B5 100%);
             min-height: 100vh;
-            color: #2d2b2a;
+            color: #2D2B2A;
+            padding: 1rem;
         }
 
         body.dark {
-            background: #1a2a2f;
-            color: #e0e0e0;
+            background: linear-gradient(135deg, #1a2a2f 0%, #0f1a1f 100%);
+            color: #F5F5F5;
         }
 
         .app-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 1rem;
         }
 
         .card {
             background: var(--blanco);
-            border-radius: 32px;
+            border-radius: var(--border-radius);
             box-shadow: var(--sombra);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 1.8rem;
+            margin-bottom: 1.8rem;
+            border: 2px solid var(--amarillo-maiz);
         }
 
         body.dark .card {
             background: #2c3e34;
-            color: #f0f0f0;
+            border-color: var(--naranja-atardecer);
         }
 
         .btn {
             background: var(--amarillo-maiz);
             border: none;
-            padding: 12px 24px;
+            padding: 12px 28px;
             border-radius: 60px;
             font-weight: bold;
             font-size: 1rem;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 5px 0 #b97f10;
+            transition: 0.07s linear;
+            font-family: inherit;
         }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b97f10;
+        }
+
         .btn-primary {
             background: var(--azul-bandera);
             color: white;
+            box-shadow: 0 5px 0 #0f2a4a;
         }
+
         .btn-success {
             background: var(--verde-naturaleza);
             color: white;
+            box-shadow: 0 5px 0 #1b5e20;
         }
+
         .btn-stop {
-            background: #e53935;
+            background: var(--rojo-pinolero);
             color: white;
             font-size: 1.8rem;
             padding: 16px 28px;
-            animation: pulse 1.2s infinite;
-        }
-        .btn:hover {
-            transform: scale(1.02);
-            filter: brightness(0.95);
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); background: #e53935; }
-            50% { transform: scale(1.05); background: #c62828; }
-            100% { transform: scale(1); background: #e53935; }
+            animation: pulse 1s infinite;
+            box-shadow: 0 5px 0 #8b0000;
         }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+        @keyframes pulse {
+            0% { transform: scale(1); background: #c62828; }
+            50% { transform: scale(1.05); background: #e53935; }
+            100% { transform: scale(1); background: #c62828; }
         }
 
         .user-header {
@@ -138,21 +107,23 @@ const analytics = getAnalytics(app);
             align-items: center;
             gap: 1rem;
             flex-wrap: wrap;
-            background: rgba(255,255,240,0.8);
-            border-radius: 48px;
-            padding: 0.8rem 1.5rem;
+            background: rgba(255, 245, 220, 0.95);
+            border-radius: 80px;
+            padding: 0.8rem 1.8rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid var(--amarillo-maiz);
         }
+
         .avatar {
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
-            background: var(--naranja-atardecer);
+            background: linear-gradient(145deg, var(--naranja-atardecer), #F57C00);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 2.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
         .modal {
@@ -165,70 +136,456 @@ const analytics = getAnalytics(app);
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
             background: white;
             max-width: 500px;
             width: 90%;
-            border-radius: 40px;
+            border-radius: 48px;
             padding: 2rem;
-            max-height: 80vh;
-            overflow-y: auto;
+            text-align: center;
+            border: 4px solid var(--amarillo-maiz);
         }
-        body.dark .modal-content { background: #2c3e34; }
+
+        body.dark .modal-content {
+            background: #2c3e34;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
 
         .category-grid {
             display: grid;
-            gap: 0.8rem;
-            grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
         }
+
         .cat-input {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+            background: #FFF2DF;
+            border-radius: 28px;
+            padding: 8px 12px;
         }
-        .cat-input label { font-weight: bold; }
+
+        .cat-input label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
         input, select {
-            padding: 10px;
+            padding: 10px 16px;
             border-radius: 60px;
-            border: 1px solid #ccc;
+            border: 2px solid var(--amarillo-maiz);
+            font-family: inherit;
+            width: 100%;
         }
 
         .chat-box {
-            background: #f0ede8;
-            border-radius: 24px;
-            height: 300px;
+            background: #F7F2E7;
+            border-radius: 28px;
+            height: 280px;
             overflow-y: auto;
             padding: 1rem;
+            border: 2px solid var(--amarillo-maiz);
         }
 
         @media (max-width: 768px) {
-            .btn { padding: 8px 16px; font-size: 0.9rem; }
-            .avatar { width: 45px; height: 45px; font-size: 1.5rem; }
+            .btn { padding: 8px 16px; font-size: 0.85rem; }
+            .avatar { width: 50px; height: 50px; font-size: 1.8rem; }
+            .card { padding: 1rem; }
         }
     </style>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Tu configuración de Firebase (proporcionada)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCcUGTXDuC5Oi3xVdAjn1IeszXzcewvJD8",
+            authDomain: "stopinolero-3a9fe.firebaseapp.com",
+            projectId: "stopinolero-3a9fe",
+            storageBucket: "stopinolero-3a9fe.firebasestorage.app",
+            messagingSenderId: "981024606261",
+            appId: "1:981024606261:web:649c3d300caa214ddd497c",
+            measurementId: "G-0JCYC7KEYZ"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        
+        let currentUserData = null;
+        let unsubscribeRooms = null;
+        let currentRoomUnsub = null;
+        
+        // Elementos DOM
+        const authScreen = document.getElementById('authScreen');
+        const mainPanel = document.getElementById('mainPanel');
+        const googleBtn = document.getElementById('googleLoginBtn');
+        const guestBtn = document.getElementById('guestLoginBtn');
+        
+        const categoriesMap = {
+            classic: ["Nombre","Animal","Ciudad","País","Comida","Profesión","Objeto"],
+            pinolera: ["Municipio","Departamento","Volcán","Río","Comida típica","Tradición","Personaje histórico","Sitio turístico"]
+        };
+        
+        async function updateUserUI() {
+            if(!currentUserData) return;
+            document.getElementById('userLevel').innerText = currentUserData.nivel || "Novato Pinolero";
+            document.getElementById('userPoints').innerText = currentUserData.puntosGlobales || 0;
+            document.getElementById('userWins').innerText = currentUserData.victorias || 0;
+            const header = document.getElementById('userHeader');
+            if(header) {
+                header.innerHTML = `<div class="avatar">${currentUserData.avatar || '🇳🇮'}</div>
+                                    <div><strong>${currentUserData.nombre}</strong><br>⭐ ${currentUserData.puntosGlobales || 0} pts</div>
+                                    <button id="logoutBtn" class="btn">🚪 Salir</button>`;
+                document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+                    await signOut(auth);
+                    location.reload();
+                });
+            }
+        }
+        
+        async function saveUserToFirestore(user, isGuest = false, guestName = null) {
+            const userRef = doc(db, "users", user.uid);
+            const snap = await getDoc(userRef);
+            const displayName = guestName || user.displayName || `Pinolero${Math.floor(Math.random()*1000)}`;
+            const avatar = ["🌽","🦜","🌋","🏝️","🎭","🇳🇮"][Math.floor(Math.random()*6)];
+            if(!snap.exists()){
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    nombre: displayName,
+                    avatar: avatar,
+                    nivel: "Novato Pinolero",
+                    experiencia: 0,
+                    puntosGlobales: 0,
+                    victorias: 0,
+                    partidasJugadas: 0,
+                    mejorPuntuacion: 0,
+                    isGuest: isGuest
+                });
+            }
+            const data = (await getDoc(userRef)).data();
+            currentUserData = { uid: user.uid, ...data };
+            updateUserUI();
+            loadMainMenu();
+        }
+        
+        onAuthStateChanged(auth, async (user) => {
+            if(user){
+                await saveUserToFirestore(user, user.isAnonymous, user.displayName);
+                authScreen.style.display = 'none';
+                mainPanel.style.display = 'block';
+            } else {
+                authScreen.style.display = 'flex';
+                mainPanel.style.display = 'none';
+            }
+        });
+        
+        googleBtn.onclick = () => signInWithPopup(auth, provider);
+        guestBtn.onclick = async () => {
+            const cred = await signInAnonymously(auth);
+            const randomName = "Viajero@" + Math.floor(Math.random()*1000);
+            await saveUserToFirestore(cred.user, true, randomName);
+        };
+        
+        function openModal(id){ document.getElementById(id).style.display = 'flex'; }
+        function closeModals(){ document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+        document.querySelectorAll('.closeModal').forEach(btn => btn.addEventListener('click', closeModals));
+        
+        document.getElementById('createRoomBtn').onclick = () => openModal('createRoomModal');
+        document.getElementById('joinRoomBtn').onclick = () => openModal('joinRoomModal');
+        
+        // Crear sala
+        document.getElementById('confirmCreateRoom').onclick = async () => {
+            if(!currentUserData) return;
+            const roomName = document.getElementById('roomName').value || "Sala Pinolera";
+            const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
+            const roundTime = parseInt(document.getElementById('roundTime').value);
+            const numRounds = parseInt(document.getElementById('numRounds').value);
+            const catType = document.getElementById('catType').value;
+            const roomId = Math.random().toString(36).substring(2,8).toUpperCase();
+            await setDoc(doc(db, "rooms", roomId), {
+                roomId, roomName, host: currentUserData.uid, maxPlayers, roundTime, numRounds, catType,
+                players: [{uid: currentUserData.uid, nombre: currentUserData.nombre, avatar: currentUserData.avatar, puntosRonda: 0, total: 0}],
+                state: "waiting",
+                currentRound: 0,
+                currentLetter: null,
+                stopTriggered: false
+            });
+            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `${currentUserData.nombre} creó la sala`, timestamp: serverTimestamp() });
+            loadRoomView(roomId);
+            closeModals();
+        };
+        
+        // Unirse a sala
+        document.getElementById('confirmJoinRoom').onclick = async () => {
+            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            const roomRef = doc(db, "rooms", code);
+            const snap = await getDoc(roomRef);
+            if(!snap.exists()) { alert("Sala no encontrada"); return; }
+            const room = snap.data();
+            if(room.players.some(p => p.uid === currentUserData.uid)) { loadRoomView(code); closeModals(); return; }
+            if(room.players.length >= room.maxPlayers) { alert("Sala llena"); return; }
+            await updateDoc(roomRef, {
+                players: arrayUnion({uid: currentUserData.uid, nombre: currentUserData.nombre, avatar: currentUserData.avatar, puntosRonda: 0, total: 0})
+            });
+            await addDoc(collection(db, "rooms", code, "messages"), { sender: "Sistema", text: `${currentUserData.nombre} se unió`, timestamp: serverTimestamp() });
+            loadRoomView(code);
+            closeModals();
+        };
+        
+        function loadMainMenu() {
+            if(currentRoomUnsub) currentRoomUnsub();
+            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>🎮 ¡Bienvenido a Stop Pinolero!</h2><p>🇳🇮 Demuestra tu conocimiento de Nicaragua. Crea una sala o únete con un código.</p><img src="https://cdn-icons-png.flaticon.com/512/1999/1999625.png" width="80" style="margin-top:10px"></div>`;
+        }
+        
+        async function loadRoomView(roomId) {
+            if(currentRoomUnsub) currentRoomUnsub();
+            const roomRef = doc(db, "rooms", roomId);
+            currentRoomUnsub = onSnapshot(roomRef, async (roomSnap) => {
+                if(!roomSnap.exists()){ alert("Sala eliminada"); loadMainMenu(); return; }
+                const room = roomSnap.data();
+                const isHost = room.host === currentUserData.uid;
+                const playersList = room.players;
+                let html = `<div class="card"><h2>🏠 ${room.roomName} (Código: ${roomId})</h2>
+                            <div class="grid-2">
+                                <div><h3>👥 Jugadores (${playersList.length}/${room.maxPlayers})</h3><ul>`;
+                playersList.forEach(p => html += `<li>${p.avatar || '🎭'} ${p.nombre} - ${p.total} pts</li>`);
+                html += `</ul>${isHost && room.state === 'waiting' ? '<button id="startGameBtn" class="btn btn-success">🚀 Iniciar Partida</button>' : '<p>⏳ Esperando al anfitrión...</p>'}</div>
+                         <div><h3>💬 Chat en vivo</h3><div id="chatMessages" class="chat-box"></div>
+                         <input id="chatInput" placeholder="Escribe un mensaje..."><button id="sendChat" class="btn">Enviar</button></div>
+                         </div></div>`;
+                document.getElementById('dynamicView').innerHTML = html;
+                
+                // Chat en tiempo real
+                const chatQuery = query(collection(db, "rooms", roomId, "messages"), orderBy("timestamp", "asc"));
+                onSnapshot(chatQuery, (snap) => {
+                    const chatDiv = document.getElementById('chatMessages');
+                    if(chatDiv) chatDiv.innerHTML = snap.docs.map(d => `<div><b>${d.data().sender}</b>: ${d.data().text}</div>`).join('');
+                });
+                
+                document.getElementById('sendChat')?.addEventListener('click', async () => {
+                    const msg = document.getElementById('chatInput').value;
+                    if(msg) await addDoc(collection(db, "rooms", roomId, "messages"), { sender: currentUserData.nombre, text: msg, timestamp: serverTimestamp() });
+                    document.getElementById('chatInput').value = '';
+                });
+                
+                if(isHost && room.state === 'waiting') {
+                    document.getElementById('startGameBtn')?.addEventListener('click', async () => {
+                        const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                        await updateDoc(roomRef, { state: "playing", currentRound: 1, currentLetter: letter, roundStart: serverTimestamp(), stopTriggered: false });
+                        await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🎲 ¡Ronda 1! Letra: ${letter}`, timestamp: serverTimestamp() });
+                        renderGameInterface(roomId, { ...room, currentRound: 1, currentLetter: letter });
+                    });
+                }
+                if(room.state === "playing") {
+                    await renderGameInterface(roomId, room);
+                }
+            });
+        }
+        
+        async function renderGameInterface(roomId, room) {
+            const categories = categoriesMap[room.catType] || categoriesMap.classic;
+            const html = `<div class="card"><h2>🎲 Ronda ${room.currentRound}/${room.numRounds} | Letra: ${room.currentLetter}</h2>
+                         <div id="timerDisplay" style="font-size:2.5rem; font-weight:bold; text-align:center">⏱️ --</div>
+                         <button id="stopBtnGlobal" class="btn btn-stop">🛑 STOP</button>
+                         <form id="answersForm"><div class="category-grid" id="catsGrid"></div><button type="submit" class="btn btn-primary">📝 Guardar respuestas</button></form></div>
+                         <div id="roundResults"></div>`;
+            document.getElementById('dynamicView').innerHTML = html;
+            const container = document.getElementById('catsGrid');
+            categories.forEach(cat => {
+                container.innerHTML += `<div class="cat-input"><label>${cat}</label><input name="${cat}" placeholder="Ej: ..."></div>`;
+            });
+            let timeLeft = room.roundTime;
+            const timerElem = document.getElementById('timerDisplay');
+            const interval = setInterval(async () => {
+                if(timeLeft <= 0) {
+                    clearInterval(interval);
+                    await finishRound(roomId);
+                } else {
+                    timerElem.innerText = `⏱️ ${timeLeft} segundos`;
+                    timeLeft--;
+                }
+            }, 1000);
+            window.currentTimer = interval;
+            
+            document.getElementById('stopBtnGlobal')?.addEventListener('click', async () => {
+                const roomSnap = await getDoc(doc(db, "rooms", roomId));
+                if(roomSnap.data().stopTriggered) return;
+                await updateDoc(doc(db, "rooms", roomId), { stopTriggered: true });
+                await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `${currentUserData.nombre} presionó STOP! ⏰ 10 segundos restantes`, timestamp: serverTimestamp() });
+                setTimeout(() => finishRound(roomId), 10000);
+            });
+            
+            document.getElementById('answersForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const answers = {};
+                categories.forEach(cat => { answers[cat] = document.querySelector(`[name="${cat}"]`).value.trim() || ""; });
+                await setDoc(doc(db, "rooms", roomId, "answers", currentUserData.uid), { uid: currentUserData.uid, answers, round: room.currentRound });
+            });
+        }
+        
+        async function finishRound(roomId) {
+            clearInterval(window.currentTimer);
+            const roomRef = doc(db, "rooms", roomId);
+            const roomSnap = await getDoc(roomRef);
+            const room = roomSnap.data();
+            if(!room) return;
+            const answersSnap = await getDocs(collection(db, `rooms/${roomId}/answers`));
+            const allAnswers = {};
+            answersSnap.forEach(docu => { allAnswers[docu.id] = docu.data(); });
+            const categoriesList = categoriesMap[room.catType];
+            const scores = {};
+            room.players.forEach(p => { scores[p.uid] = 0; });
+            for(let cat of categoriesList) {
+                const wordMap = new Map();
+                for(let [uid, data] of Object.entries(allAnswers)) {
+                    if(data.round === room.currentRound) {
+                        let word = data.answers[cat]?.toLowerCase().trim();
+                        if(word && word !== "") {
+                            if(!wordMap.has(word)) wordMap.set(word, []);
+                            wordMap.get(word).push(uid);
+                        }
+                    }
+                }
+                for(let [word, uids] of wordMap.entries()) {
+                    let points = (uids.length === 1) ? 2 : 1;
+                    uids.forEach(uid => scores[uid] += points);
+                }
+            }
+            let maxScore = 0, winnerUid = null;
+            for(let [uid, pts] of Object.entries(scores)) {
+                if(pts > maxScore) { maxScore = pts; winnerUid = uid; }
+            }
+            const newPlayers = room.players.map(p => {
+                let add = scores[p.uid] || 0;
+                let bonus = (p.uid === winnerUid) ? 5 : 0;
+                let newTotal = p.total + add + bonus;
+                return { ...p, puntosRonda: add + bonus, total: newTotal };
+            });
+            await updateDoc(roomRef, { players: newPlayers, stopTriggered: false });
+            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `📊 Resultados ronda: ${winnerUid === currentUserData.uid ? "¡Ganaste la ronda! +5 bonus" : "Ronda finalizada"}`, timestamp: serverTimestamp() });
+            if(room.currentRound >= room.numRounds) {
+                finalizeGame(roomId);
+            } else {
+                const newLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                await updateDoc(roomRef, { currentRound: increment(1), currentLetter: newLetter, roundStart: serverTimestamp(), stopTriggered: false });
+                await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🔄 Nueva Ronda ${room.currentRound+1} - Letra: ${newLetter}`, timestamp: serverTimestamp() });
+                // Recargar interfaz
+                const updatedRoom = (await getDoc(roomRef)).data();
+                renderGameInterface(roomId, updatedRoom);
+            }
+        }
+        
+        async function finalizeGame(roomId) {
+            const roomRef = doc(db, "rooms", roomId);
+            const snap = await getDoc(roomRef);
+            const room = snap.data();
+            const sorted = [...room.players].sort((a,b) => b.total - a.total);
+            const winner = sorted[0];
+            const userRef = doc(db, "users", winner.uid);
+            await updateDoc(userRef, { victorias: increment(1), partidasJugadas: increment(1), puntosGlobales: increment(winner.total) });
+            await addDoc(collection(db, "rooms", roomId, "messages"), { sender: "Sistema", text: `🏆 ¡FIN DEL JUEGO! Ganador: ${winner.nombre} con ${winner.total} puntos`, timestamp: serverTimestamp() });
+            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>🏁 Partida finalizada</h2>
+                <p>🥇 1º ${sorted[0]?.nombre} - ${sorted[0]?.total} pts</p>
+                <p>🥈 2º ${sorted[1]?.nombre} - ${sorted[1]?.total} pts</p>
+                <p>🥉 3º ${sorted[2]?.nombre} - ${sorted[2]?.total} pts</p>
+                <button class="btn" onclick="location.reload()">Volver al inicio</button></div>`;
+            await updateDoc(roomRef, { state: "finished" });
+        }
+        
+        // Ranking Global
+        document.getElementById('rankingBtn').onclick = async () => {
+            const q = query(collection(db, "users"), orderBy("puntosGlobales", "desc"), limit(20));
+            const snap = await getDocs(q);
+            let rankHtml = `<div class="card"><h2>🏆 Ranking Global</h2><ol>`;
+            snap.forEach(docu => { let d = docu.data(); rankHtml += `<li><strong>${d.nombre}</strong> - ${d.puntosGlobales || 0} pts - ${d.nivel}</li>`; });
+            rankHtml += `</ol></div>`;
+            document.getElementById('dynamicView').innerHTML = rankHtml;
+        };
+        
+        // Amigos
+        document.getElementById('friendsBtn').onclick = async () => {
+            const friendsRef = collection(db, "friends");
+            const q = query(friendsRef, where("usuario", "==", currentUserData.uid), where("estado", "==", "aceptado"));
+            const snap = await getDocs(q);
+            let html = `<div class="card"><h2>👥 Mis Amigos</h2><input id="searchFriend" placeholder="Buscar por nombre..."><button id="searchBtn" class="btn">🔍 Buscar</button><ul id="friendList">`;
+            snap.forEach(d => html += `<li>👤 ${d.data().amigoNombre || d.data().amigo}</li>`);
+            html += `</ul></div>`;
+            document.getElementById('dynamicView').innerHTML = html;
+            document.getElementById('searchBtn').onclick = async () => {
+                const search = document.getElementById('searchFriend').value;
+                const userQuery = query(collection(db, "users"), where("nombre", ">=", search), where("nombre", "<=", search + "\uf8ff"), limit(5));
+                const res = await getDocs(userQuery);
+                let list = '<h4>Resultados</h4>';
+                res.forEach(u => {
+                    if(u.id !== currentUserData.uid) list += `<div>${u.data().nombre} <button class="sendRequestBtn" data-uid="${u.id}">➕ Agregar amigo</button></div>`;
+                });
+                document.getElementById('friendList').innerHTML = list;
+                document.querySelectorAll('.sendRequestBtn').forEach(btn => btn.addEventListener('click', async () => {
+                    const friendId = btn.dataset.uid;
+                    const friendDoc = await getDoc(doc(db, "users", friendId));
+                    await setDoc(doc(db, "friends", `${currentUserData.uid}_${friendId}`), { usuario: currentUserData.uid, amigo: friendId, estado: "pendiente", amigoNombre: friendDoc.data().nombre });
+                    alert("Solicitud enviada ✅");
+                }));
+            };
+        };
+        
+        // Perfil
+        document.getElementById('profileBtn').onclick = () => {
+            const user = currentUserData;
+            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>👤 Mi Perfil Pinolero</h2>
+                <p>🎭 Avatar: ${user.avatar}</p><p>📛 Nombre: ${user.nombre}</p>
+                <p>🏅 Nivel: ${user.nivel}</p><p>⭐ Experiencia: ${user.experiencia}</p>
+                <p>💰 Puntos globales: ${user.puntosGlobales}</p><p>🎮 Partidas jugadas: ${user.partidasJugadas}</p>
+                <p>🏆 Victorias: ${user.victorias}</p>
+                <button id="toggleDark">🌙 Modo Oscuro</button>
+                <button id="shareProfile">🔗 Compartir perfil</button></div>`;
+            document.getElementById('toggleDark')?.addEventListener('click', () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); });
+            document.getElementById('shareProfile')?.addEventListener('click', () => { alert(`📎 Comparte tu perfil: https://stoppinolero.com/u/${currentUserData.uid}`); });
+            if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+        };
+        
+        // Configuración
+        document.getElementById('settingsBtn').onclick = () => {
+            document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>⚙️ Configuración divertida</h2>
+                <label><input type="checkbox" id="soundToggle"> 🔊 Activar sonidos</label><br>
+                <button id="saveSettings" class="btn">Guardar preferencias</button></div>`;
+            document.getElementById('saveSettings').onclick = () => { alert("Preferencias guardadas (por ahora solo efecto visual)"); };
+        };
+        
+        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+        window.loadRoomView = loadRoomView;
+    </script>
 </head>
 <body>
 <div class="app-container" id="appRoot">
     <div id="authScreen" class="card" style="text-align:center">
-        <h1 style="color:var(--azul-bandera)">🇳🇮 Stop Pinolero 🎉</h1>
-        <p>¡El clásico Stop con sabor nicaragüense!</p>
+        <h1 style="color:var(--azul-bandera); font-size:2.5rem;">🇳🇮 Stop Pinolero 🎉</h1>
+        <p style="font-size:1.2rem">¡El clásico Stop con sabor Nicaragüense!</p>
         <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem">
             <button id="googleLoginBtn" class="btn btn-primary">🔐 Ingresar con Google</button>
             <button id="guestLoginBtn" class="btn">🎭 Modo Invitado</button>
         </div>
     </div>
-
     <div id="mainPanel" style="display:none">
         <div class="user-header" id="userHeader"></div>
         <div class="grid-2">
             <div class="card">
-                <h3>📊 Estadísticas</h3>
+                <h3>📊 Mis Estadísticas</h3>
                 <p>🏆 Nivel: <span id="userLevel">Novato</span></p>
                 <p>⭐ Puntos: <span id="userPoints">0</span></p>
                 <p>🎮 Victorias: <span id="userWins">0</span></p>
             </div>
             <div class="card">
-                <div style="display:flex; gap:10px; flex-wrap:wrap">
+                <div style="display:flex; gap:12px; flex-wrap:wrap">
                     <button id="createRoomBtn" class="btn btn-success">➕ Crear Sala</button>
                     <button id="joinRoomBtn" class="btn">🔗 Unirse a Sala</button>
                     <button id="rankingBtn" class="btn">🏅 Ranking</button>
@@ -240,312 +597,8 @@ const analytics = getAnalytics(app);
         </div>
         <div id="dynamicView"></div>
     </div>
-
-    <div id="createRoomModal" class="modal"><div class="modal-content"><h3>Crear Sala</h3><input type="text" id="roomName" placeholder="Nombre de sala"><select id="maxPlayers"><option>4</option><option>6</option><option>8</option></select><select id="roundTime"><option>30</option><option>60</option><option>90</option></select><select id="numRounds"><option>3</option><option>5</option></select><select id="catType"><option value="classic">Clásicas</option><option value="pinolera">Pinoleras</option></select><button id="confirmCreateRoom" class="btn">Crear</button><button class="closeModal">Cancelar</button></div></div>
-    <div id="joinRoomModal" class="modal"><div class="modal-content"><h3>Unirse con código</h3><input id="roomCodeInput" placeholder="Código de sala"><button id="confirmJoinRoom">Unirse</button><button class="closeModal">Cerrar</button></div></div>
+    <div id="createRoomModal" class="modal"><div class="modal-content"><h3>➕ Crear Sala</h3><input type="text" id="roomName" placeholder="Nombre de la sala"><select id="maxPlayers"><option>4</option><option>6</option><option>8</option><option>10</option></select><select id="roundTime"><option>30</option><option>60</option><option>90</option></select><select id="numRounds"><option>3</option><option>5</option></select><select id="catType"><option value="classic">📚 Clásicas</option><option value="pinolera">🇳🇮 Pinoleras</option></select><button id="confirmCreateRoom" class="btn">Crear sala</button><button class="closeModal">Cancelar</button></div></div>
+    <div id="joinRoomModal" class="modal"><div class="modal-content"><h3>🔗 Unirse con código</h3><input id="roomCodeInput" placeholder="Ej: A3F7K2"><button id="confirmJoinRoom" class="btn">Unirse</button><button class="closeModal">Cerrar</button></div></div>
 </div>
-<script type="module">
-    // app.js contenido principal - SIN STORAGE
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "TU_API_KEY",
-        authDomain: "TU_PROYECTO.firebaseapp.com",
-        projectId: "TU_PROYECTO",
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let currentUserData = null;
-    let unsubscribeRooms = null;
-    
-    const authScreen = document.getElementById('authScreen');
-    const mainPanel = document.getElementById('mainPanel');
-    const googleBtn = document.getElementById('googleLoginBtn');
-    const guestBtn = document.getElementById('guestLoginBtn');
-    
-    const categoriesMap = {
-        classic: ["Nombre","Animal","Ciudad","País","Comida","Profesión","Objeto"],
-        pinolera: ["Municipio","Departamento","Volcán","Río","Comida típica","Tradición","Personaje histórico","Sitio turístico"]
-    };
-    
-    async function updateUserUI() {
-        if(!currentUserData) return;
-        document.getElementById('userLevel').innerText = currentUserData.nivel || "Novato";
-        document.getElementById('userPoints').innerText = currentUserData.puntosGlobales || 0;
-        document.getElementById('userWins').innerText = currentUserData.victorias || 0;
-        document.getElementById('userHeader').innerHTML = `<div class="avatar">${currentUserData.avatar || '👤'}</div><div><strong>${currentUserData.nombre}</strong><br>⭐${currentUserData.puntosGlobales || 0}</div><button id="logoutBtn" class="btn">🚪 Salir</button>`;
-        document.getElementById('logoutBtn')?.addEventListener('click', async()=>{ await signOut(auth); location.reload(); });
-    }
-    
-    async function saveUserToFirestore(user, isGuest=false, guestName=null) {
-        const userRef = doc(db, "users", user.uid);
-        const snap = await getDoc(userRef);
-        const displayName = guestName || user.displayName || `Pinolero${Math.floor(Math.random()*1000)}`;
-        const avatar = "🎲"+["🌽","🦜","🌋","🏝️"][Math.floor(Math.random()*4)];
-        if(!snap.exists()){
-            await setDoc(userRef, {
-                uid: user.uid,
-                nombre: displayName,
-                avatar: avatar,
-                nivel: "Novato Pinolero",
-                experiencia: 0,
-                puntosGlobales: 0,
-                victorias: 0,
-                partidasJugadas: 0,
-                mejorPuntuacion: 0,
-                isGuest: isGuest
-            });
-        }
-        const data = (await getDoc(userRef)).data();
-        currentUserData = { uid: user.uid, ...data };
-        updateUserUI();
-        loadMainMenu();
-    }
-    
-    onAuthStateChanged(auth, async(user)=>{
-        if(user){
-            await saveUserToFirestore(user, user.isAnonymous, user.displayName);
-            authScreen.style.display='none';
-            mainPanel.style.display='block';
-        } else {
-            authScreen.style.display='flex';
-            mainPanel.style.display='none';
-        }
-    });
-    
-    googleBtn.onclick = ()=> signInWithPopup(auth, new GoogleAuthProvider());
-    guestBtn.onclick = async()=> {
-        const cred = await signInAnonymously(auth);
-        const randomName = "Viajero@"+Math.floor(Math.random()*1000);
-        await saveUserToFirestore(cred.user, true, randomName);
-    };
-    
-    function openModal(id){ document.getElementById(id).style.display='flex'; }
-    function closeModals(){ document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); }
-    document.querySelectorAll('.closeModal').forEach(btn=>btn.addEventListener('click',closeModals));
-    document.getElementById('createRoomBtn').onclick = ()=> openModal('createRoomModal');
-    document.getElementById('joinRoomBtn').onclick = ()=> openModal('joinRoomModal');
-    
-    document.getElementById('confirmCreateRoom').onclick = async()=>{
-        if(!currentUserData) return;
-        const roomName = document.getElementById('roomName').value || "Sala Pinolera";
-        const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
-        const roundTime = parseInt(document.getElementById('roundTime').value);
-        const numRounds = parseInt(document.getElementById('numRounds').value);
-        const catType = document.getElementById('catType').value;
-        const roomId = Math.random().toString(36).substring(2,8).toUpperCase();
-        await setDoc(doc(db,"rooms",roomId),{
-            roomId, roomName, host: currentUserData.uid, maxPlayers, roundTime, numRounds, catType,
-            players: [{uid:currentUserData.uid, nombre:currentUserData.nombre, avatar:currentUserData.avatar, puntosRonda:0, total:0}],
-            state: "waiting",
-            currentRound:0,
-            currentLetter: null,
-            roundEndTime: null,
-            stopTriggered: false
-        });
-        await addDoc(collection(db,"rooms",roomId,"messages"),{sender: "Sistema", text: `${currentUserData.nombre} creó la sala`, timestamp: serverTimestamp()});
-        loadRoomView(roomId);
-        closeModals();
-    };
-    
-    document.getElementById('confirmJoinRoom').onclick = async()=>{
-        const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-        const roomRef = doc(db,"rooms",code);
-        const snap = await getDoc(roomRef);
-        if(!snap.exists()) { alert("Sala no encontrada"); return; }
-        const room = snap.data();
-        if(room.players.some(p=>p.uid===currentUserData.uid)) { loadRoomView(code); closeModals(); return; }
-        if(room.players.length>=room.maxPlayers) { alert("Sala llena"); return; }
-        await updateDoc(roomRef,{
-            players: arrayUnion({uid:currentUserData.uid, nombre:currentUserData.nombre, avatar:currentUserData.avatar, puntosRonda:0, total:0})
-        });
-        await addDoc(collection(db,"rooms",code,"messages"),{sender:"Sistema",text:`${currentUserData.nombre} se unió`, timestamp: serverTimestamp()});
-        loadRoomView(code);
-        closeModals();
-    };
-    
-    function loadMainMenu(){
-        document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>🎮 Bienvenido a Stop Pinolero</h2><p>¡Crea o únete a una sala y demuestra tu conocimiento de Nicaragua!</p></div>`;
-        if(unsubscribeRooms) unsubscribeRooms();
-    }
-    
-    async function loadRoomView(roomId){
-        const roomRef = doc(db,"rooms",roomId);
-        const unsubRoom = onSnapshot(roomRef, async(roomSnap)=>{
-            if(!roomSnap.exists()){ alert("Sala eliminada"); loadMainMenu(); return; }
-            const room = roomSnap.data();
-            const isHost = room.host === currentUserData.uid;
-            const playersList = room.players;
-            let html = `<div class="card"><h2>🏠 ${room.roomName} (Cód: ${roomId})</h2><div class="grid-2"><div><h3>Jugadores (${playersList.length}/${room.maxPlayers})</h3><ul>`;
-            playersList.forEach(p=>html+=`<li>${p.avatar || '🎭'} ${p.nombre} - ${p.total} pts</li>`);
-            html+=`</ul>${isHost && room.state==='waiting' ? '<button id="startGameBtn" class="btn btn-success">🚀 Iniciar Partida</button>' : '<p>⏳ Esperando al anfitrión...</p>'}</div><div><h3>💬 Chat</h3><div id="chatMessages" class="chat-box" style="height:200px"></div><input id="chatInput" placeholder="Mensaje..."><button id="sendChat">Enviar</button></div></div></div>`;
-            document.getElementById('dynamicView').innerHTML = html;
-            const chatQuery = query(collection(db,"rooms",roomId,"messages"), orderBy("timestamp","asc"));
-            onSnapshot(chatQuery, (snap)=>{
-                const chatDiv = document.getElementById('chatMessages');
-                if(chatDiv) chatDiv.innerHTML = snap.docs.map(d=>`<div><b>${d.data().sender}</b>: ${d.data().text}</div>`).join('');
-            });
-            document.getElementById('sendChat')?.addEventListener('click', async()=>{
-                const msg = document.getElementById('chatInput').value;
-                if(msg) await addDoc(collection(db,"rooms",roomId,"messages"),{sender:currentUserData.nombre, text:msg, timestamp: serverTimestamp()});
-                document.getElementById('chatInput').value='';
-            });
-            if(isHost && room.state==='waiting') document.getElementById('startGameBtn')?.addEventListener('click', async()=>{
-                const letter = String.fromCharCode(65+Math.floor(Math.random()*26));
-                await updateDoc(roomRef,{ state: "playing", currentRound:1, currentLetter: letter, roundStart: serverTimestamp(), stopTriggered: false });
-                await addDoc(collection(db,"rooms",roomId,"messages"),{sender:"Sistema",text:`¡Ronda 1! Letra ${letter}`,timestamp:serverTimestamp()});
-                startRound(roomId,1,letter,room.roundTime);
-            });
-            if(room.state === "playing") await renderGameInterface(roomId,room);
-        });
-        window.currentRoomUnsub = unsubRoom;
-    }
-    
-    async function renderGameInterface(roomId,room){
-        const categories = categoriesMap[room.catType] || categoriesMap.classic;
-        const html = `<div class="card"><h2>🎲 Ronda ${room.currentRound}/${room.numRounds} | Letra: ${room.currentLetter}</h2><div id="timerDisplay" style="font-size:2rem;font-weight:bold">⏱️ --</div><button id="stopBtnGlobal" class="btn btn-stop">STOP</button><form id="answersForm"><div class="category-grid" id="catsGrid"></div><button type="submit" class="btn">Guardar Respuestas</button></form></div><div id="roundResults"></div>`;
-        document.getElementById('dynamicView').innerHTML = html;
-        const container = document.getElementById('catsGrid');
-        categories.forEach(cat=>{ container.innerHTML += `<div class="cat-input"><label>${cat}</label><input name="${cat}" placeholder="Escribe tu respuesta..."></div>` });
-        let timeLeft = room.roundTime;
-        const timerElem = document.getElementById('timerDisplay');
-        const interval = setInterval(async()=>{
-            if(timeLeft<=0){
-                clearInterval(interval);
-                await finishRound(roomId);
-            } else {
-                timerElem.innerText = `⏱️ ${timeLeft}s`;
-                timeLeft--;
-            }
-        },1000);
-        window.timerInterval = interval;
-        document.getElementById('stopBtnGlobal')?.addEventListener('click', async()=>{
-            if(room.stopTriggered) return;
-            await updateDoc(doc(db,"rooms",roomId),{ stopTriggered: true, stopTimestamp: serverTimestamp() });
-            await addDoc(collection(db,"rooms",roomId,"messages"),{sender:"Sistema",text:`${currentUserData.nombre} presionó STOP! 10 segundos restantes`,timestamp:serverTimestamp()});
-            setTimeout(()=>finishRound(roomId), 10000);
-        });
-        document.getElementById('answersForm')?.addEventListener('submit', async(e)=>{
-            e.preventDefault();
-            const answers = {};
-            categories.forEach(cat=>{ answers[cat] = document.querySelector(`[name="${cat}"]`).value.trim() || ""; });
-            await setDoc(doc(db,"rooms",roomId,"answers",currentUserData.uid),{uid:currentUserData.uid, answers, round: room.currentRound});
-        });
-    }
-    
-    async function finishRound(roomId){
-        clearInterval(window.timerInterval);
-        const roomRef = doc(db,"rooms",roomId);
-        const roomSnap = await getDoc(roomRef);
-        const room = roomSnap.data();
-        if(!room) return;
-        const answersSnap = await getDocs(collection(db,`rooms/${roomId}/answers`));
-        const allAnswers = {};
-        answersSnap.forEach(doc=>{ allAnswers[doc.id] = doc.data(); });
-        const categoriesList = categoriesMap[room.catType];
-        const scores = {};
-        room.players.forEach(p=>{ scores[p.uid] = 0; });
-        for(let cat of categoriesList){
-            const wordMap = new Map();
-            for(let [uid, data] of Object.entries(allAnswers)){
-                if(data.round === room.currentRound){
-                    let word = data.answers[cat]?.toLowerCase().trim();
-                    if(word && word!==""){
-                        if(!wordMap.has(word)) wordMap.set(word,[]);
-                        wordMap.get(word).push(uid);
-                    }
-                }
-            }
-            for(let [word, uids] of wordMap.entries()){
-                let points = (uids.length === 1) ? 2 : 1;
-                uids.forEach(uid=> scores[uid] += points);
-            }
-        }
-        let maxScore = 0, winnerUid = null;
-        for(let [uid, pts] of Object.entries(scores)){
-            if(pts>maxScore){ maxScore=pts; winnerUid=uid;}
-        }
-        const newPlayers = room.players.map(p=>{
-            let add = scores[p.uid] || 0;
-            let bonus = (p.uid===winnerUid) ? 5 : 0;
-            let newTotal = p.total + add + bonus;
-            return {...p, puntosRonda: add+bonus, total: newTotal};
-        });
-        await updateDoc(roomRef,{ players: newPlayers, stopTriggered: false });
-        await addDoc(collection(db,"rooms",roomId,"messages"),{sender:"Sistema",text:`Resultados ronda: ${winnerUid===currentUserData.uid ? "Ganaste la ronda!" : "Ronda finalizada"}`,timestamp:serverTimestamp()});
-        if(room.currentRound >= room.numRounds){
-            finalizeGame(roomId);
-        } else {
-            await updateDoc(roomRef,{ currentRound: increment(1), currentLetter: String.fromCharCode(65+Math.floor(Math.random()*26)), roundStart: serverTimestamp(), stopTriggered: false });
-            await addDoc(collection(db,"rooms",roomId,"messages"),{sender:"Sistema",text:`Nueva Ronda ${room.currentRound+1}`,timestamp:serverTimestamp()});
-        }
-    }
-    
-    async function finalizeGame(roomId){
-        const roomRef = doc(db,"rooms",roomId);
-        const snap = await getDoc(roomRef);
-        const room = snap.data();
-        const sorted = [...room.players].sort((a,b)=>b.total-a.total);
-        let winner = sorted[0];
-        const userRef = doc(db,"users",winner.uid);
-        await updateDoc(userRef,{ victorias: increment(1), partidasJugadas: increment(1), puntosGlobales: increment(winner.total) });
-        await addDoc(collection(db,"rooms",roomId,"messages"),{sender:"Sistema",text:`🏆 FIN DEL JUEGO - Ganador: ${winner.nombre} con ${winner.total} puntos`,timestamp:serverTimestamp()});
-        document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>🏁 Partida finalizada</h2><p>1° ${sorted[0]?.nombre} - ${sorted[0]?.total} pts<br>2° ${sorted[1]?.nombre} - ${sorted[1]?.total}<br>3° ${sorted[2]?.nombre} - ${sorted[2]?.total}</p><button onclick="location.reload()">Volver al inicio</button></div>`;
-        await updateDoc(roomRef,{ state: "finished" });
-    }
-    
-    async function startRound(roomId,round,letter,timeSec){}
-    
-    document.getElementById('rankingBtn').onclick = async()=>{
-        const q = query(collection(db,"users"), orderBy("puntosGlobales","desc"), limit(20));
-        const snap = await getDocs(q);
-        let rankHtml = `<div class="card"><h2>🏆 Ranking Global</h2><ol>`;
-        snap.forEach(doc=>{ let d=doc.data(); rankHtml+=`<li>${d.nombre} - ${d.puntosGlobales||0} pts - ${d.nivel}</li>`; });
-        rankHtml+=`</ol></div>`;
-        document.getElementById('dynamicView').innerHTML = rankHtml;
-    };
-    
-    document.getElementById('friendsBtn').onclick = async()=>{
-        const friendsRef = collection(db,"friends");
-        const q = query(friendsRef, where("usuario","==",currentUserData.uid), where("estado","==","aceptado"));
-        const snap = await getDocs(q);
-        let html = `<div class="card"><h2>👥 Amigos</h2><input id="searchFriend" placeholder="Buscar por nombre"><button id="searchBtn">Buscar</button><ul id="friendList">`;
-        snap.forEach(d=>html+=`<li>${d.data().amigoNombre || d.data().amigo}</li>`);
-        html+=`</ul></div>`;
-        document.getElementById('dynamicView').innerHTML = html;
-        document.getElementById('searchBtn').onclick = async()=>{
-            const search = document.getElementById('searchFriend').value;
-            const userQuery = query(collection(db,"users"), where("nombre",">=",search), where("nombre","<=",search+"\uf8ff"), limit(5));
-            const res = await getDocs(userQuery);
-            let list = '<h4>Resultados</h4>';
-            res.forEach(u=>{
-                if(u.id !== currentUserData.uid) list+=`<div>${u.data().nombre} <button class="sendRequestBtn" data-uid="${u.id}">➕ Agregar</button></div>`;
-            });
-            document.getElementById('friendList').innerHTML = list;
-            document.querySelectorAll('.sendRequestBtn').forEach(btn=>btn.addEventListener('click', async()=>{
-                const friendId = btn.dataset.uid;
-                await setDoc(doc(db,"friends",`${currentUserData.uid}_${friendId}`),{usuario:currentUserData.uid, amigo:friendId, estado:"pendiente", amigoNombre: (await getDoc(doc(db,"users",friendId))).data().nombre });
-                alert("Solicitud enviada");
-            }));
-        };
-    };
-    
-    document.getElementById('profileBtn').onclick = ()=>{
-        const user = currentUserData;
-        document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>👤 Mi Perfil</h2><p>Avatar: ${user.avatar}</p><p>Nombre: ${user.nombre}</p><p>Nivel: ${user.nivel}</p><p>Exp: ${user.experiencia}</p><p>Puntos: ${user.puntosGlobales}</p><p>Partidas Jugadas: ${user.partidasJugadas}</p><p>Victorias: ${user.victorias}</p><button id="toggleDark">🌙 Modo Oscuro</button> <button id="shareProfile">🔗 Compartir Perfil</button></div>`;
-        document.getElementById('toggleDark')?.addEventListener('click',()=>{ document.body.classList.toggle('dark'); localStorage.setItem('darkMode',document.body.classList.contains('dark')); });
-        document.getElementById('shareProfile')?.addEventListener('click',()=>{ alert(`Comparte: https://stoppinolero.com/u/${currentUserData.uid}`); });
-        if(localStorage.getItem('darkMode')==='true') document.body.classList.add('dark');
-    };
-    document.getElementById('settingsBtn').onclick = ()=>{
-        document.getElementById('dynamicView').innerHTML = `<div class="card"><h2>⚙️ Configuración</h2><label><input type="checkbox" id="soundToggle"> Activar Sonidos</label><button id="saveSettings">Guardar</button></div>`;
-        document.getElementById('saveSettings').onclick = ()=>{ alert("Preferencias guardadas"); };
-    };
-    if(localStorage.getItem('darkMode')==='true') document.body.classList.add('dark');
-    window.loadRoomView = loadRoomView;
-</script>
 </body>
 </html>
